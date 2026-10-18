@@ -1,0 +1,16 @@
+{
+  "name": "MAVI — Triagem Cardiovascular e Histórico de Saúde",
+  "short_name": "MAVI Triagem",
+  "description": "Ferramenta de triagem de risco cardiovascular e histórico de saúde da MAVI Assistência à Saúde, para uso em campo, com funcionamento offline e geração de PDF.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FBF6EE",
+  "theme_color": "#2F5D4F",
+  "lang": "pt-BR",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
