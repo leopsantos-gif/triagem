@@ -3162,9 +3162,10 @@ function renderLogin(msg) {
     } catch (e) {
       adminFailedTries++;
       if (adminFailedTries >= 5) { adminBlockedUntil = Date.now() + 30000; adminFailedTries = 0; }
-      err.textContent = 'Senha incorreta.';
+      err.textContent = (e && e.message === 'wrong-password') ? 'Senha incorreta.' : 'Não foi possível abrir (' + String(e && e.message || e).slice(0, 80) + '). A senha pode estar certa: tente de novo.';
       btn.disabled = false; btn.textContent = 'Entrar';
-      input.value = ''; input.focus();
+      if (e && e.message === 'wrong-password') input.value = '';
+      input.focus();
     }
   };
   document.getElementById('admEnter').addEventListener('click', go);
@@ -4038,6 +4039,21 @@ installBtn.addEventListener('click', async () => {
 window.addEventListener('appinstalled', () => { installBtn.style.display = 'none'; });
 
 render();
+
+// Botão "Mostrar" em todo campo de senha (para o usuário conferir o que digitou)
+(function () {
+  function addToggle(inp) {
+    if (inp.dataset.eye) return; inp.dataset.eye = '1';
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = 'Mostrar senha';
+    b.style.cssText = 'display:block;margin:4px 0 10px;background:none;border:0;color:#0a6b4f;text-decoration:underline;font-size:14px;cursor:pointer;padding:0';
+    b.addEventListener('click', () => { const sh = inp.type === 'password'; inp.type = sh ? 'text' : 'password'; b.textContent = sh ? 'Ocultar senha' : 'Mostrar senha'; });
+    inp.insertAdjacentElement('afterend', b);
+  }
+  function scan() { document.querySelectorAll('input[type=password]').forEach(addToggle); }
+  new MutationObserver(scan).observe(document.documentElement, { childList: true, subtree: true });
+  scan();
+})();
 </script>
 
 
