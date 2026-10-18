@@ -2770,6 +2770,121 @@ async function cloudAdminSetup(cloud, password) {
   try { localStorage.setItem(CLOUD_PUB_KEY, b64enc(pubSpki)); } catch (e) {}
 }
 
+
+// ---------------- Código de recuperação da senha da área restrita ----------------
+// A chave privada fica cifrada pela senha. O código de recuperação guarda uma segunda
+// cópia cifrada da mesma chave: só quem tem o código consegue redefinir a senha.
+const REC_ALPHA = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+function recNew() {
+  const u = crypto.getRandomValues(new Uint8Array(20));
+  let s = '';
+  for (const b of u) s += REC_ALPHA[b % REC_ALPHA.length];
+  return s.match(/.{5}/g).join('-');
+}
+function recNorm(c) { return String(c || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); }
+async function recUnwrap(wrapped, kek, iv) {
+  return crypto.subtle.unwrapKey('pkcs8', wrapped, kek, { name: 'AES-GCM', iv }, { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['decrypt']);
+}
+async function cloudRecoverySet(cloud, password) {
+  const ref = cloud.db.doc(`data/users/${cloud.uid}/adminkey`);
+  const snap = await ref.get();
+  if (!snap.exists) throw new Error('not-configured');
+  const k = snap.data();
+  let priv;
+  try { priv = await recUnwrap(b64dec(k.wrappedPriv), await deriveKek(password, b64dec(k.salt), k.iter || PBKDF2_ITER), b64dec(k.iv)); }
+  catch (e) { throw new Error('wrong-password'); }
+  const code = recNew();
+  const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
+  const rk = await deriveKek(recNorm(code), salt, PBKDF2_ITER);
+  const w = new Uint8Array(await crypto.subtle.wrapKey('pkcs8', priv, rk, { name: 'AES-GCM', iv }));
+  await ref.set(Object.assign({}, k, { rec: { iter: PBKDF2_ITER, salt: b64enc(salt), iv: b64enc(iv), wrappedPriv: b64enc(w) } }));
+  return code;
+}
+async function cloudRecoveryReset(cloud, code, newPassword) {
+  const ref = cloud.db.doc(`data/users/${cloud.uid}/adminkey`);
+  const snap = await ref.get();
+  if (!snap.exists) throw new Error('not-configured');
+  const k = snap.data();
+  if (!k.rec) throw new Error('no-recovery');
+  let priv;
+  try { priv = await recUnwrap(b64dec(k.rec.wrappedPriv), await deriveKek(recNorm(code), b64dec(k.rec.salt), k.rec.iter || PBKDF2_ITER), b64dec(k.rec.iv)); }
+  catch (e) { throw new Error('wrong-code'); }
+  const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
+  const kek = await deriveKek(newPassword, salt, PBKDF2_ITER);
+  const w = new Uint8Array(await crypto.subtle.wrapKey('pkcs8', priv, kek, { name: 'AES-GCM', iv }));
+  await ref.set(Object.assign({}, k, { v: 1, iter: PBKDF2_ITER, salt: b64enc(salt), iv: b64enc(iv), wrappedPriv: b64enc(w) }));
+}
+
+function renderRecovery() {
+  adminArea.innerHTML = admShell(`
+    <div class="adm-card adm-form">
+      <h3>Esqueci a senha</h3>
+      <p class="adm-sub">Digite o código de recuperação que o app mostrou quando você o gerou e escolha uma senha nova. Os registros continuam acessíveis.</p>
+      <label for="recCode">Código de recuperação</label>
+      <input type="text" id="recCode" autocomplete="off" autocapitalize="characters" placeholder="XXXXX-XXXXX-XXXXX-XXXXX">
+      <label for="recPw1">Senha nova (mínimo 8 caracteres)</label>
+      <input type="password" id="recPw1" autocomplete="new-password">
+      <label for="recPw2">Repita a senha nova</label>
+      <input type="password" id="recPw2" autocomplete="new-password">
+      <div class="adm-err" id="recErr"></div>
+      <button class="adm-btn" id="recGo" type="button">Redefinir senha</button>
+      <button class="adm-btn" id="recBack" type="button" style="margin-top:8px;background:#fff;color:var(--green);border:1px solid var(--green)">Voltar</button>
+    </div>`);
+  bindAdmClose();
+  document.getElementById('recBack').addEventListener('click', () => renderLogin());
+  document.getElementById('recGo').addEventListener('click', async () => {
+    const err = document.getElementById('recErr'), btn = document.getElementById('recGo');
+    const code = document.getElementById('recCode').value, p1 = document.getElementById('recPw1').value, p2 = document.getElementById('recPw2').value;
+    if (recNorm(code).length < 20) { err.textContent = 'Digite o código completo.'; return; }
+    if (p1.length < 8) { err.textContent = 'A senha nova precisa ter pelo menos 8 caracteres.'; return; }
+    if (p1 !== p2) { err.textContent = 'As senhas não são iguais.'; return; }
+    btn.disabled = true; btn.textContent = 'Verificando…'; err.textContent = '';
+    try {
+      const cloud = await getCloud();
+      if (!cloud || !cloud.isOwner) throw new Error('no-cloud');
+      await cloudRecoveryReset(cloud, code, p1);
+      adminPrivKey = await adminUnlock(p1);
+      await loadAdminRecords();
+      renderDashboard();
+    } catch (e) {
+      err.textContent = e.message === 'wrong-code' ? 'Código incorreto.' : e.message === 'no-recovery' ? 'Nenhum código de recuperação foi gerado ainda. Sem ele a senha não pode ser recuperada.' : 'Não foi possível redefinir. Confira a internet e se você entrou com a conta da coordenação.';
+      btn.disabled = false; btn.textContent = 'Redefinir senha';
+    }
+  });
+}
+
+function recoveryCardHTML() {
+  if (!adminCloudMode) return '';
+  return `<section class="adm-card adm-form">
+    <h3>🔑 Código de recuperação</h3>
+    <p class="adm-sub">Se você esquecer a senha da área restrita, este código permite criar uma senha nova sem perder os registros. Guarde em lugar seguro, separado da senha (papel guardado ou e-mail só seu). Quem tiver o código consegue abrir os registros. Gerar um código novo invalida o anterior.</p>
+    <label for="recPwCur">Senha atual da área restrita</label>
+    <input type="password" id="recPwCur" autocomplete="current-password">
+    <div class="adm-err" id="recGenErr"></div>
+    <div id="recShow"></div>
+    <button class="adm-btn" id="recGen" type="button">Gerar código de recuperação</button>
+  </section>`;
+}
+function bindRecoveryCard() {
+  const b = document.getElementById('recGen');
+  if (!b) return;
+  b.addEventListener('click', async () => {
+    const err = document.getElementById('recGenErr'), pw = document.getElementById('recPwCur').value;
+    if (!pw) { err.textContent = 'Digite a senha atual.'; return; }
+    b.disabled = true; err.textContent = '';
+    try {
+      const cloud = await getCloud();
+      const code = await cloudRecoverySet(cloud, pw);
+      document.getElementById('recShow').innerHTML = `<div style="margin:10px 0;padding:12px;border:2px dashed var(--ochre);border-radius:10px;background:#fffaf0;text-align:center"><div style="font-size:12px;color:#6b5a45">Anote agora. Este código não será mostrado de novo.</div><div style="font-family:monospace;font-size:19px;font-weight:700;letter-spacing:1px;margin-top:6px;user-select:all">${escapeHtml(code)}</div></div>`;
+      document.getElementById('recPwCur').value = '';
+      b.textContent = 'Gerar outro código (invalida o anterior)';
+    } catch (e) {
+      err.textContent = e.message === 'wrong-password' ? 'Senha incorreta.' : 'Não foi possível gerar. Confira a internet.';
+    }
+    b.disabled = false;
+  });
+}
+
 async function cloudAdminUnlock(cloud, password) {
   const snap = await cloud.db.doc(`data/users/${cloud.uid}/adminkey`).get();
   if (!snap.exists) throw new Error('not-configured');
@@ -3028,6 +3143,7 @@ function renderLogin(msg) {
       <input type="password" id="admPw" autocomplete="current-password">
       <div class="adm-err" id="admErr"></div>
       <button class="adm-btn" id="admEnter" type="button">Entrar</button>
+      <button type="button" id="admForgot" style="margin-top:10px;background:none;border:0;color:var(--green);text-decoration:underline;font-size:14px;cursor:pointer">Esqueci a senha</button>
     </div>`);
   bindAdmClose();
   const input = document.getElementById('admPw');
@@ -3052,6 +3168,7 @@ function renderLogin(msg) {
     }
   };
   document.getElementById('admEnter').addEventListener('click', go);
+  document.getElementById('admForgot').addEventListener('click', () => renderRecovery());
   input.addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
   setTimeout(() => input.focus(), 50);
 }
@@ -3785,6 +3902,7 @@ function renderDashboard() {
       Nome e telefone são guardados, cifrados, só de quem autorizou o contato. Peso/altura exatos e textos livres não são guardados.
       ${notes.length ? '<br>⚠️ ' + notes.join(' ') : ''}
     </div>
+    ${recoveryCardHTML()}
     <section class="adm-card">
       <h3>Registros guardados</h3>
       <p class="adm-sub">${fmtInt(adminRecords.length)} questionário(s) ${adminCloudMode ? 'recebido(s) no banco central da coordenação' : 'guardado(s) neste aparelho'}.</p>
@@ -3805,6 +3923,7 @@ function renderDashboard() {
   });
   const ctMore = document.getElementById('ctMore');
   if (ctMore) ctMore.addEventListener('click', () => { adminContactFilters.limit += 30; rerender(); });
+  bindRecoveryCard();
   const pdfMore = document.getElementById('pdfMore');
   if (pdfMore) pdfMore.addEventListener('click', () => { adminContactFilters.pdfLimit += 20; rerender(); });
   const exMore = document.getElementById('exMore');
