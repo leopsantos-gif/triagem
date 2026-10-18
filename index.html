@@ -2977,16 +2977,20 @@ async function importPdfFiles(files) {
 
 let adminSenders = 0;
 let adminCloudMode = false;
+let cloudBadRecs = 0;
 async function cloudLoadRecords(cloud) {
+  cloudBadRecs = 0;
   const senders = await cloud.db.collection('inbox').get();
   const raws = [];
   for (const s of senders.docs) {
     const recs = await cloud.db.collection(`inbox/${s.id}/recs`).get();
-    recs.docs.forEach(d => { const b = d.data(); raws.push({ id: d.id, iv: b64dec(b.iv), ek: b64dec(b.ek), ct: b64dec(b.ct) }); });
+    let bad = 0;
+    recs.docs.forEach(d => { try { const b = d.data(); raws.push({ id: d.id, iv: b64dec(b.iv), ek: b64dec(b.ek), ct: b64dec(b.ct) }); } catch (e) { bad++; } });
+    cloudBadRecs += bad;
   }
   const out = await Promise.all(raws.map(r => decryptRecord(adminPrivKey, r).catch(() => null)));
   adminRecords = out.filter(Boolean).filter(r => r.createdAt && r.ans && typeof r.ans === 'object');
-  adminUnreadable = raws.length - adminRecords.length;
+  adminUnreadable = raws.length - adminRecords.length + cloudBadRecs;
   adminRecords = dedupeRecords(adminRecords);
   adminSenders = senders.size;
   adminCloudMode = true;
