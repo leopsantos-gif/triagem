@@ -815,7 +815,7 @@
   .option input[type=checkbox]:checked, .ex-row input:checked, .consent-row input:checked { background: var(--navy); border-color: var(--navy); }
   .option input[type=checkbox]:checked { background: var(--orange); border-color: var(--orange); }
   .option input[type=checkbox]:checked::after, .ex-row input:checked::after, .consent-row input:checked::after { content: ''; position: absolute; left: 6px; top: 2px; width: 7px; height: 13px; border: solid #fff; border-width: 0 3px 3px 0; transform: rotate(45deg); }
-  .consent-row { background: var(--sky); border: 1.5px solid var(--line); border-radius: 14px; padding: 12px 14px; }
+  .consent-row { touch-action: manipulation; -webkit-tap-highlight-color: transparent; user-select: none; background: var(--sky); border: 1.5px solid var(--line); border-radius: 14px; padding: 12px 14px; }
   .conditional-field textarea, .conditional-field input[type="text"], .name-field input[type="text"], .name-field input[type="tel"], .name-field select, .bmi-field input { border: 1.5px solid var(--line); border-radius: 12px; padding: 13px 14px; font-size: 16px; background: var(--sky); }
   .name-field input:focus, .name-field select:focus, .bmi-field input:focus { outline: none; border-color: var(--blue); background: #fff; box-shadow: 0 0 0 3px rgba(26,95,168,.15); }
   .id-label { color: var(--navy); }
@@ -1450,6 +1450,16 @@ formArea.addEventListener('click', (e) => {
   updateVisibility();
   updateProgress();
   saveDraft();
+});
+// Caixas de autorização: marcar/desmarcar livremente (toque no quadrado ou no texto)
+formArea.addEventListener('click', (e) => {
+  const row = e.target.closest('.consent-row');
+  if (!row) return;
+  const box = row.querySelector('input[type=checkbox]');
+  if (!box || e.target === box) return;
+  e.preventDefault();
+  box.checked = !box.checked;
+  box.dispatchEvent(new Event('change', { bubbles: true }));
 });
 formArea.addEventListener('input', (e) => {
   const t = e.target;
