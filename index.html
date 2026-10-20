@@ -658,6 +658,26 @@
   .hb-label .hb-val { color: var(--viz-text-2); font-variant-numeric: tabular-nums; white-space: nowrap; }
   .hb-track { height: 14px; background: var(--viz-track); border-radius: 0 4px 4px 0; }
   .hb-fill { height: 100%; border-radius: 0 4px 4px 0; }
+  .dl-toolbar { position: sticky; top: 0; z-index: 5; }
+  .dl-ctl { display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: center; margin-top: 8px; }
+  .dl-ctl label { font-size: 13px; display: inline-flex; align-items: center; gap: 8px; color: var(--viz-text-1); }
+  .dl-ctl select { padding: 7px 8px; border-radius: 8px; border: 1px solid var(--viz-grid, #cfd8e3); font-size: 13px; font-family: inherit; background: transparent; color: inherit; }
+  input.dl-switch { -webkit-appearance: none; appearance: none; width: 42px; height: 24px; border-radius: 12px; background: #b9c3d0; position: relative; cursor: pointer; transition: background .15s; flex: none; margin: 0; }
+  input.dl-switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: left .15s; }
+  input.dl-switch:checked { background: var(--viz-1, #1A5FA8); }
+  input.dl-switch:checked::after { left: 21px; }
+  .dl-row { display: flex; align-items: center; gap: 8px; padding: 7px 4px; border-bottom: 1px solid var(--viz-grid, #e3e9f0); background: transparent; }
+  .dl-row.dragging { opacity: .6; background: rgba(26,95,168,.08); border-radius: 8px; }
+  .dl-row.dl-zero .dl-main { opacity: .45; }
+  .dl-handle { cursor: grab; touch-action: none; user-select: none; font-size: 18px; line-height: 1; padding: 6px 4px; color: var(--viz-text-2); flex: none; }
+  .dl-chk { width: 20px; height: 20px; flex: none; accent-color: var(--viz-1, #1A5FA8); margin: 0; }
+  .dl-main { flex: 1; min-width: 0; }
+  .dl-main .hb-label { margin-bottom: 3px; }
+  .dl-act { display: flex; gap: 2px; flex: none; }
+  .dl-act button { border: 0; background: transparent; cursor: pointer; font-size: 13px; padding: 5px 6px; border-radius: 6px; color: var(--viz-text-2); opacity: .75; }
+  .dl-act button:hover, .dl-act button.on { opacity: 1; background: rgba(26,95,168,.12); }
+  .dl-hid { font-size: 12px; margin-top: 6px; }
+  .dl-hid button { border: 0; background: none; color: var(--viz-1, #1A5FA8); cursor: pointer; text-decoration: underline; font-size: 12px; padding: 0; }
   .adm-table { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 8px; }
   .adm-table th, .adm-table td { text-align: left; padding: 6px; border-bottom: 1px solid #eeece6; }
   .adm-table th { color: var(--viz-text-2); font-weight: 600; }
@@ -990,42 +1010,49 @@ const FORM = [
     { id: 'D4', q: 'Já disseram que o colesterol estava alto?', opts: ['Não', 'Alto e toma remédio', 'Alto e não toma remédio', 'Nunca mediu ou não sabe'], pts: [0, 1, 2, 1] },
     { id: 'D5', q: 'Algum médico já disse que tem problema nos rins?', opts: ['Sim', 'Não', 'Não sei'], pts: [1, 0, 0] },
     { id: 'D6', q: 'Toma remédio todo dia para pressão, diabetes ou colesterol?', opts: ['Sim', 'Não'] },
-    { id: 'D7', q: 'Quando fez os últimos exames de controle?', opts: ['Menos de 6 meses', '6 a 12 meses', 'Mais de 1 ano', 'Nunca'], showIf: { D6: 0 } },
+    { id: 'D7n', q: 'Alguém já disse que o(a) senhor(a) tem gordura no fígado?', opts: ['Sim', 'Não', 'Não sei'] },
+    { id: 'D8n', q: 'Alguém já falou que o(a) senhor(a) tem problema de circulação e/ou varizes?', opts: ['Sim', 'Não', 'Não sei'] },
+    { id: 'D9n', q: 'Alguém já falou que o(a) senhor(a) tem problema nos ossos?', opts: ['Sim', 'Não', 'Não sei'] },
+    { id: 'D10n', q: 'Como tem estado o seu emocional ultimamente?', opts: ['Bem', 'Mais ou menos', 'Ruim'] },
+    { id: 'D11n', q: 'O(a) senhor(a) tem alguma doença diagnosticada?', opts: ['Sim', 'Não'], text: { when: 0, label: 'Qual ou quais?', ph: 'Digite a(s) doença(s)' } },
+    { id: 'D7', num: 'D12', q: 'Quando fez os últimos exames de controle?', opts: ['Menos de 6 meses', '6 a 12 meses', 'Mais de 1 ano', 'Nunca'], showIf: { D6: 0 } },
   ]},
   { id: 'habitos', title: 'Hábitos', items: [
-    { id: 'H1', q: 'O(a) senhor(a) fuma?', opts: ['Nunca fumou', 'Parou há mais de 1 ano', 'Fuma ou parou há menos de 1 ano'], pts: [0, 1, 2] },
+    { id: 'H1', q: 'O(a) senhor(a) fuma?', opts: ['Nunca fumou', 'Parou há mais de 1 ano', 'Parou há menos de 1 ano', 'Fuma atualmente'], pts: [0, 1, 2, 2] },
     { id: 'H2', q: 'Faz caminhada ou exercício pelo menos 3 vezes por semana?', opts: ['Sim', 'Às vezes', 'Não'], pts: [0, 1, 2] },
     { id: 'H3', q: 'Come fritura, salgadinho ou toma refrigerante quase todo dia?', opts: ['Não', 'Às vezes', 'Sim'], pts: [0, 0, 1] },
     { id: 'H4', q: 'Bebe cerveja ou cachaça mais de 2 vezes por semana?', opts: ['Não', 'Sim'], pts: [0, 1], optional: true },
   ]},
   { id: 'familia', title: 'Família', items: [
-    { id: 'F1', q: 'Pai, mãe ou irmão teve infarto ou derrame (AVC)?', opts: ['Sim', 'Não', 'Não sei'], pts: [1, 0, 0] },
-    { id: 'F2', q: 'Mais alguém na casa toma remédio todo dia ou precisa fazer exames?', opts: ['Não', 'Sim, 1 pessoa', 'Sim, 2 pessoas', 'Sim, 3 ou mais'] },
+    { id: 'F1', q: 'Pai, mãe ou alguém da família teve infarto ou derrame (AVC)?', opts: ['Sim', 'Não', 'Não sei'], pts: [1, 0, 0] },
+    { id: 'F2n', q: 'Alguém da família tem algum problema de saúde?', opts: ['Sim', 'Não'], text: { when: 0, label: 'Qual problema e quem tem?', ph: 'Ex.: diabetes (mãe), pressão alta (irmão)' } },
   ]},
   { id: 'acesso', title: 'Cuidado e acesso', sub: 'Estas perguntas não entram na pontuação: servem para os próximos passos.', items: [
-    { id: 'C1', q: 'Quando foi a última consulta ou check-up com médico?', opts: ['Menos de 1 ano', '1 a 2 anos', 'Mais de 2 anos', 'Nunca'] },
     { id: 'C2', q: 'Quando fez eletrocardiograma pela última vez?', opts: ['Menos de 1 ano', 'Mais de 1 ano', 'Nunca', 'Não sabe'] },
     { id: 'C5', q: 'Quando fez exames de sangue pela última vez?', opts: ['Menos de 1 ano', '1 a 2 anos', 'Mais de 2 anos', 'Nunca'] },
-    { id: 'C6', q: 'Costuma fazer exames por conta própria, sem pedido do médico?', opts: ['Só com pedido médico', 'Por conta própria, quando precisa', 'Por conta própria, quando tem promoção de laboratório', 'Não costuma fazer exames'] },
-    { id: 'C3', q: 'Tem plano de saúde ou cartão de descontos?', opts: ['Plano de saúde', 'Cartão de descontos', 'Nenhum'] },
+    { id: 'C6n', q: 'Quando o(a) senhor(a) quer fazer exames de rotina, só os básicos:', opts: ['O(a) senhor(a) vai logo ao laboratório', 'Vai ao médico primeiro', 'Espera promoções para fazer'] },
+    { id: 'C3n', type: 'multi', q: 'Tem plano funerário ou cartão de desconto?', hint: 'Pode marcar mais de uma alternativa.', opts: ['BM', 'System', 'Unilplan', 'Total Saúde', 'Cartão de Todos', 'Nenhum'] },
     { id: 'C4', q: 'O que mais atrapalha o(a) senhor(a) a cuidar da saúde?', opts: ['Custo', 'Distância ou transporte', 'Falta de tempo', 'Demora para conseguir atendimento', 'Não sabe quais exames fazer', 'Nada atrapalha'] },
   ]},
   { id: 'interesse', title: 'Interesse', items: [
-    { id: 'I1', type: 'multi', q: 'Gostaria de fazer algum destes serviços?', hint: 'Pode marcar mais de um.', opts: ['Exames de sangue', 'Eletrocardiograma', 'Consulta pelo celular', 'Consulta presencial', 'Nenhum agora'] },
-    { id: 'I2', q: 'Prefere fazer os exames em casa ou no laboratório?', opts: ['Em casa', 'No laboratório', 'Tanto faz'] },
-    { id: 'I3', q: 'Se a MAVI tivesse uma mensalidade com desconto em exames todo ano e consulta pelo celular, para o(a) senhor(a) e a família, teria interesse?', opts: ['Sim', 'Talvez', 'Não'] },
+    { id: 'I1n', q: 'O(a) senhor(a) está satisfeito(a) com o seu plano agora?', opts: ['Sim', 'Não'], text: { when: 1, label: 'Se não, o que?', ph: 'Digite o motivo' } },
+    { id: 'I2n', q: 'O(a) senhor(a) sabe o que é consulta online?', opts: ['Sim', 'Não'] },
+    { id: 'I3n', q: 'Se a proposta fosse boa, o(a) senhor(a) teria outro plano?', opts: ['Sim', 'Não'] },
+    { id: 'I4n', type: 'text', optional: true, q: 'Se o(a) senhor(a) tivesse outro plano que cobrisse toda a sua família, qual seria o valor ideal?', text: { label: 'Valor ideal por mês (R$)', ph: 'Ex.: 50', numeric: true } },
   ]},
 ];
 const ITEMS = FORM.flatMap(b => b.items.map(it => Object.assign({ block: b.id }, it)));
 const ITEM = Object.fromEntries(ITEMS.map(it => [it.id, it]));
+function numOf(it) { return it.num || it.id.replace(/n$/, ''); }
 const ALERT_IDS = ['A1', 'A2', 'A3', 'A4'];
 const CLINICAL_BLOCKS = ['alert', 'perfil', 'doencas', 'habitos', 'familia'];
 const SALES_BLOCKS = ['acesso', 'interesse'];
 const MAX_SCORE = ITEMS.reduce((a, it) => a + (it.type === 'bmi' ? 2 : it.pts ? Math.max(...it.pts) : 0), 0);
-const MUNICIPIOS = ["Custódia-PE", "Triunfo-PE", "Fátima (Flores)-PE", "Tavares-PB", "Outro"];
+const MUNICIPIOS = ["Custódia-PE", "Triunfo-PE", "Fátima (Flores)-PE", "Tavares-PB"];
 
 // ---------------- Estado ----------------
 const ANS = {}; // ANS[id] = índice; multi = [índices]; P3 = {peso, altura, ns}
+const TXT = {}; // TXT[id] = texto digitado (campos 'Qual ou quais?' etc.)
 let resultComputed = null;
 
 const formArea = document.getElementById('formArea');
@@ -1040,7 +1067,13 @@ function isVisible(it) {
   if (!it.showIf) return true;
   return Object.entries(it.showIf).every(([k, v]) => ANS[k] === v);
 }
+function textVisible(it) {
+  if (!it.text || !isVisible(it)) return false;
+  return it.type === 'text' || it.text.when === undefined || ANS[it.id] === it.text.when;
+}
+function txtOf(it) { return (textVisible(it) && TXT[it.id]) ? String(TXT[it.id]).trim() : ''; }
 function isAnswered(it) {
+  if (it.type === 'text') return !!txtOf(it);
   const a = ANS[it.id];
   if (it.type === 'multi') return Array.isArray(a) && a.length > 0;
   if (it.type === 'bmi') return !!a && (a.ns || (bmiOf(a) !== null));
@@ -1067,6 +1100,7 @@ function bmiText(a) {
   return `Peso ${a.peso} kg · altura ${a.altura} cm · IMC ${fmtDec(b)} (${cat})`;
 }
 function optText(it) {
+  if (it.type === 'text') return txtOf(it) || 'Não respondido';
   const a = ANS[it.id];
   if (it.type === 'bmi') return bmiText(a);
   if (it.type === 'multi') return Array.isArray(a) && a.length ? a.map(i => it.opts[i]).join(', ') : 'Não respondido';
@@ -1108,13 +1142,11 @@ function nextSteps() {
   if ((ANS.D2 === 1 || ANS.D2 === 2) && [1, 2, 3].includes(ANS.C2)) add('Eletrocardiograma com laudo', 'Tem pressão alta e não fez eletrocardiograma no último ano.');
   if (ANS.D3 === 3 || ANS.D4 === 3) add('Glicemia e perfil de colesterol', 'Nunca mediu ou não sabe o açúcar ou o colesterol.');
   if (ANS.C5 === 2 || ANS.C5 === 3) add('Exames de sangue básicos', 'Não faz exames de sangue há mais de 2 anos.');
-  if (ANS.P2 >= 1 && [1, 2, 3].includes(ANS.C1)) add('Check-up básico', 'Tem 40 anos ou mais e não passa por consulta há mais de 1 ano.');
-  if (ANS.F1 === 0) add('Check-up do coração', 'Pai, mãe ou irmão teve infarto ou derrame.');
-  if (ANS.F2 >= 1) add('Pacote para a família', 'Outras pessoas da casa tomam remédio ou precisam de exames.');
-  if (ANS.I2 === 0) add('Coleta em casa', 'Prefere fazer os exames em casa.');
-  if (ANS.I3 === 0 || ANS.I3 === 1) add('Mensalidade MAVI com dependentes', 'Mostrou interesse em exames todo ano com mensalidade.');
+  if (ANS.F1 === 0) add('Check-up do coração', 'Pai, mãe ou alguém da família teve infarto ou derrame.');
+  if (ANS.F2n === 0) add('Pacote para a família', 'Há alguém da família com problema de saúde.');
+  if (ANS.I3n === 0) add('Mensalidade MAVI com dependentes', 'Teria outro plano se a proposta fosse boa.');
   const argument = (ANS.C4 !== undefined && ANS.C4 !== null) ? C4_ARG[ANS.C4] : null;
-  return { steps: s, argument, promo: ANS.C6 === 2 };
+  return { steps: s, argument, promo: ANS.C6n === 2 };
 }
 
 // =====================================================================
@@ -1136,9 +1168,57 @@ const EX_REFS = {
   SYNC18: 'Brignole M, et al. 2018 ESC Guidelines for the diagnosis and management of syncope (seção 4.1.1, avaliação inicial com ECG). Eur Heart J. 2018;39(21):1883-1948. doi:10.1093/eurheartj/ehy037 (PMID 29562304)',
   USPSTF18: 'US Preventive Services Task Force. Screening for Cardiovascular Disease Risk With Electrocardiography: Recommendation Statement. JAMA. 2018;319(22):2308-2314. doi:10.1001/jama.2018.6848 (PMID 29896632)',
 };
+EX_REFS.DYSL19 = 'Mach F, et al. 2019 ESC/EAS Guidelines for the management of dyslipidaemias: lipid modification to reduce cardiovascular risk. Eur Heart J. 2020;41(1):111-188. doi:10.1093/eurheartj/ehz455 (PMID 31504418)';
+EX_REFS.MASLD24 = 'European Association for the Study of the Liver (EASL), EASD, EASO. EASL-EASD-EASO Clinical Practice Guidelines on the management of metabolic dysfunction-associated steatotic liver disease (MASLD). J Hepatol. 2024;81(3):492-542. doi:10.1016/j.jhep.2024.04.031 (PMID 38851997)';
+EX_REFS.LPA22 = 'Kronenberg F, et al. Lipoprotein(a) in atherosclerotic cardiovascular disease and aortic stenosis: a European Atherosclerosis Society consensus statement. Eur Heart J. 2022;43(39):3925-3946. doi:10.1093/eurheartj/ehac361 (PMID 36036785)';
+EX_REFS.CRP03 = 'Pearson TA, et al. Markers of inflammation and cardiovascular disease: application to clinical and public health practice (CDC/AHA). Circulation. 2003;107(3):499-511. doi:10.1161/01.cir.0000052939.59093.45 (PMID 12551878)';
+
+// Valores: tabela "Particular" do PRONTO CLIN (CRM), conferida em 20/10/2026. null = sem valor cadastrado.
+const EX_PRICE_DATE = '20/10/2026';
+const EX_PRICE = {
+  ecg: null, lip: 56.00, gli: 12.50, hba1c: 22.85, cr: 14.00, k: 31.35, tgo: 28.00,
+  bnp: 364.09, hemo: 28.84, tsh: 14.00, lpa: 82.20, apob: 50.26, pcrus: 51.43, echo: null, ergo: null,
+};
+const EX_PRICE_NOTE = {
+  lip: 'colesterol total, HDL, LDL e triglicerídeos: R$ 14,00 cada',
+  k: 'potássio R$ 17,35 + ácido úrico R$ 14,00',
+  tgo: 'TGO R$ 14,00 + TGP R$ 14,00',
+};
+// Explicação técnica de cada exame
+const EX_TECH = {
+  ecg: 'Registro da atividade elétrica do coração em 12 derivações, em repouso. Avalia ritmo, frequência, condução atrioventricular e intraventricular, sobrecarga de câmaras, sinais de isquemia ou necrose prévia e intervalo QT. É o exame inicial na hipertensão e na investigação de dor torácica, palpitações, síncope e dispneia.',
+  lip: 'Dosagem de colesterol total, HDL-c e triglicerídeos, com LDL-c medido ou calculado. Estratifica o risco cardiovascular, define as metas de LDL-c e a necessidade de tratamento hipolipemiante.',
+  gli: 'Glicose plasmática em jejum. Valores de 100 a 125 mg/dL indicam pré-diabetes e 126 mg/dL ou mais indicam diabetes, com confirmação em nova coleta. Preparo informado pela tabela do PRONTO CLIN: jejum de 8 horas.',
+  hba1c: 'Fração da hemoglobina ligada à glicose, que reflete a glicemia média dos últimos 2 a 3 meses e não exige jejum. Hemoglobina glicada de 5,7 a 6,4% indica pré-diabetes e 6,5% ou mais indica diabetes. Também orienta o controle de quem já tem diabetes.',
+  cr: 'Creatinina sérica, usada para estimar a taxa de filtração glomerular (equação CKD-EPI). A redução da função renal aumenta o risco cardiovascular e orienta a escolha e a dose de medicamentos, como IECA/BRA e metformina. O valor cobrado é o da creatinina sérica; a taxa de filtração é calculada a partir dela.',
+  k: 'Potássio sérico avalia distúrbios eletrolíticos que alteram o ritmo cardíaco (hipo e hipercalemia), comuns com diuréticos, IECA e BRA. O ácido úrico avalia hiperuricemia, associada a risco cardiovascular e agravada por diuréticos tiazídicos.',
+  tgo: 'Aminotransferases (AST/TGO e ALT/TGP), marcadores de lesão hepatocelular. Servem de avaliação basal antes e durante o uso de estatinas e para rastrear doença hepática esteatótica associada à disfunção metabólica (MASLD), frequente na obesidade, no diabetes e na dislipidemia e associada a maior risco cardiovascular. Valor normal não exclui esteatose.',
+  bnp: 'Peptídeo liberado pelos cardiomiócitos sob estiramento da parede. Valor baixo (NT-proBNP abaixo de 125 pg/mL em quadro não agudo) torna a insuficiência cardíaca improvável; valor elevado indica a necessidade de ecocardiograma. Sofre influência de idade, função renal, obesidade e fibrilação atrial. O valor cobrado é o do pró-BNP (PBNP) da tabela do PRONTO CLIN.',
+  hemo: 'Hemograma completo. Anemia pode causar ou agravar dispneia, taquicardia e angina; também avalia leucócitos e plaquetas.',
+  tsh: 'Hormônio tireoestimulante. O hipertireoidismo causa taquicardia e favorece a fibrilação atrial; o hipotireoidismo se associa a dislipidemia, bradicardia e dispneia. Faz parte da investigação inicial de palpitações e de insuficiência cardíaca.',
+  lpa: 'Lipoproteína geneticamente determinada, causal para doença aterosclerótica e estenose aórtica, com pouca influência do estilo de vida. O consenso europeu recomenda dosar ao menos uma vez na vida; valores acima de cerca de 50 mg/dL (100 a 125 nmol/L) são considerados fator agravante do risco.',
+  apob: 'Apolipoproteína B: há uma molécula em cada partícula aterogênica (LDL, VLDL, IDL e lipoproteína(a)), então reflete o número de partículas. É útil quando os triglicerídeos estão altos, no diabetes, na obesidade ou com LDL-c baixo, situações em que o LDL-c pode subestimar o risco.',
+  pcrus: 'Proteína C reativa de alta sensibilidade, marcador inflamatório. Em prevenção primária, valores abaixo de 1, de 1 a 3 e acima de 3 mg/L indicam risco relativo baixo, médio e alto. Não deve ser interpretada durante infecção ou inflamação aguda (acima de 10 mg/L, repetir após 2 semanas).',
+  echo: 'Ecocardiograma transtorácico: avalia função sistólica e diastólica, dimensões e espessura do ventrículo esquerdo, valvas, pressão pulmonar e pericárdio. Indicado na suspeita de insuficiência cardíaca (dispneia, BNP elevado) e na cardiopatia conhecida.',
+  ergo: 'Teste ergométrico (ECG de esforço): avalia a resposta clínica, eletrocardiográfica e hemodinâmica ao esforço progressivo, a tolerância ao exercício e arritmias. Tem papel diagnóstico limitado frente aos métodos de imagem. Dor no peito aos esforços exige avaliação médica antes do teste.',
+};
+function fmtBRL(v) { return 'R$ ' + v.toFixed(2).replace('.', ','); }
+function examPriceText(x) {
+  const v = EX_PRICE[x.id];
+  return (v === null || v === undefined) ? 'valor não cadastrado no PRONTO CLIN' : fmtBRL(v);
+}
+function examLabel(x) { return x.name + ' — ' + examPriceText(x); }
+function examTotalLines(list) {
+  const priced = list.filter(x => EX_PRICE[x.id] !== null && EX_PRICE[x.id] !== undefined);
+  const miss = list.filter(x => EX_PRICE[x.id] === null || EX_PRICE[x.id] === undefined);
+  if (!list.length) return [];
+  const out = [`Total dos exames marcados: ${fmtBRL(priced.reduce((a, x) => a + EX_PRICE[x.id], 0))}` + (miss.length ? ` (sem ${miss.map(x => x.name.split(' (')[0]).join(', ')}, que não ${miss.length > 1 ? 'têm' : 'tem'} valor cadastrado)` : '') + '.'];
+  out.push(`Valores da tabela Particular do PRONTO CLIN, conferidos em ${EX_PRICE_DATE}; sujeitos a alteração.`);
+  return out;
+}
 let EXAM_OFF = {}; // EXAM_OFF[id] = true quando o profissional desmarca o exame
 
-const EXAM_OPT_IDS = ['bnp', 'hemo', 'tsh']; // opcionais: vêm desmarcados
+const EXAM_OPT_IDS = ['bnp', 'hemo', 'tsh', 'lpa', 'apob', 'pcrus', 'echo', 'ergo']; // opcionais: vêm desmarcados
 function examOffDefault() { return Object.fromEntries(EXAM_OPT_IDS.map(i => [i, true])); }
 
 function examSuggestions(rec) {
@@ -1155,11 +1235,12 @@ function examSuggestions(rec) {
     cvd: A.D1 === 0,
     over: bmi !== null && bmi >= 25,
     obese: bmi !== null && bmi >= 30,
-    smoke: A.H1 === 2,
+    smoke: A.H1 >= 2,
     sed: A.H2 === 2,
     fam: A.F1 === 0,
     chest: A.A1 === 0, dysp: A.A2 === 0, sync: A.A3 === 0, palp: A.A4 === 0,
     ctrlLate: A.D6 === 0 && (A.D7 === 2 || A.D7 === 3),
+    fatty: A.D7n === 0, alc: A.H4 === 1,
   };
   const list = [];
   const add = (id, type, name, why, refs, opt) => {
@@ -1211,19 +1292,15 @@ function examSuggestions(rec) {
   if (f.cvd) crWhy.push('doença do coração já conhecida');
   if (crWhy.length) add('cr', 'lab', 'Creatinina com taxa de filtração glomerular estimada', crWhy, f.hasHAS ? ['HAS20', 'KDIGO'] : ['KDIGO', 'CCS24']);
 
-  const urWhy = [];
-  if (f.renal) urWhy.push('problema nos rins já informado');
-  if (f.hasHAS) urWhy.push('pressão alta: exame de rotina da avaliação inicial');
-  if (f.dm) urWhy.push('diabetes');
-  if (urWhy.length) add('urina', 'lab', 'Urina tipo 1', urWhy, f.hasHAS ? ['HAS20', 'KDIGO'] : ['KDIGO']);
-
-  // albumina/creatinina: hipertenso só com diabetes ou 2+ fatores de risco (SBC 2020)
-  const nRf = [f.smoke, f.colHigh, f.obese, f.fam, f.sed].filter(Boolean).length;
-  const acrWhy = [];
-  if (f.renal) acrWhy.push('problema nos rins já informado');
-  if (f.dm) acrWhy.push('diabetes');
-  if (f.hasHAS && nRf >= 2) acrWhy.push('pressão alta com dois ou mais outros fatores de risco');
-  if (acrWhy.length) add('acr', 'lab', 'Relação albumina/creatinina na urina', acrWhy, f.hasHAS ? ['HAS20', 'KDIGO'] : ['KDIGO']);
+  // ---- Fígado: TGO e TGP ----
+  const tgWhy = [], tgRefs = [];
+  if (lipWhy.length) { tgWhy.push('perfil lipídico solicitado: avaliação basal das enzimas hepáticas antes e durante o uso de estatina'); tgRefs.push('DYSL19'); }
+  if (f.fatty) tgWhy.push('gordura no fígado já informada');
+  if (f.dm) tgWhy.push('diabetes');
+  if (f.obese) tgWhy.push('obesidade');
+  if (f.alc) tgWhy.push('álcool mais de 2 vezes por semana');
+  if (f.fatty || f.dm || f.obese || f.alc) tgRefs.push('MASLD24');
+  if (tgWhy.length) add('tgo', 'lab', 'TGO e TGP (AST e ALT)', tgWhy, tgRefs);
 
   if (f.hasHAS) add('k', 'lab', 'Potássio e ácido úrico', ['pressão alta: exames de rotina da avaliação inicial'], ['HAS20']);
 
@@ -1232,6 +1309,30 @@ function examSuggestions(rec) {
     add('bnp', 'lab', 'NT-proBNP (opcional: se houver suspeita de insuficiência cardíaca)', ['falta de ar fora do normal'], ['HF21'], true);
     add('hemo', 'lab', 'Hemograma completo (opcional)', ['falta de ar fora do normal'], ['HF21', 'CCS24'], true);
   }
+  // ---- Outros exames cardíacos (opcionais: vêm desmarcados) ----
+  const lpaWhy = [];
+  if (f.fam) lpaWhy.push('infarto ou AVC em parente próximo');
+  if (f.cvd) lpaWhy.push('doença do coração já conhecida');
+  if (f.colHigh) lpaWhy.push('colesterol alto já informado');
+  if (lpaWhy.length) add('lpa', 'lab', 'Lipoproteína(a) (opcional: dosar ao menos uma vez na vida)', lpaWhy, ['LPA22', 'DYSL19'], true);
+  const abWhy = [];
+  if (f.dm) abWhy.push('diabetes');
+  if (f.obese) abWhy.push('obesidade');
+  if (f.colHigh) abWhy.push('colesterol alto já informado');
+  if (f.cvd) abWhy.push('doença do coração já conhecida');
+  if (abWhy.length) add('apob', 'lab', 'Apolipoproteína B (opcional)', abWhy, ['DYSL19'], true);
+  const pcWhy = [];
+  if (f.age40) {
+    if (f.hasHAS) pcWhy.push('pressão alta');
+    if (f.smoke) pcWhy.push('fumo');
+    if (f.over) pcWhy.push('sobrepeso ou obesidade');
+    if (f.fam) pcWhy.push('infarto ou AVC em parente próximo');
+    if (f.colHigh) pcWhy.push('colesterol alto já informado');
+  }
+  if (pcWhy.length) add('pcrus', 'lab', 'Proteína C reativa ultrassensível (opcional)', pcWhy.map(w => '40 anos ou mais com ' + w), ['CRP03'], true);
+  if (f.dysp || f.cvd) add('echo', 'card', 'Ecocardiograma transtorácico (opcional)', [f.dysp ? 'falta de ar fora do normal' : null, f.cvd ? 'doença do coração já conhecida' : null].filter(Boolean), (f.dysp ? ['HF21'] : []).concat(f.cvd ? ['CCS24'] : []), true);
+  if (f.chest) add('ergo', 'card', 'Teste ergométrico (opcional)', ['dor ou aperto no peito aos esforços'], ['CCS24'], true);
+
   if (f.dysp || f.palp) add('tsh', 'lab', 'TSH (opcional: função da tireoide)', [f.dysp ? 'falta de ar fora do normal' : null, f.palp ? 'coração disparado ou descompassado' : null].filter(Boolean), (f.dysp ? ['HF21'] : []).concat(f.palp ? ['AF24'] : []), true);
 
   if (f.ctrlLate) ['lip', 'gli', 'cr'].forEach(id => {
@@ -1254,17 +1355,21 @@ function examRefKeys(list) {
   return keys;
 }
 function examWhyText(x, keys) {
-  return 'Motivo: ' + x.why.join('; ') + '. [' + x.refs.map(r => keys.indexOf(r) + 1).join(', ') + ']';
+  const pn = EX_PRICE_NOTE[x.id] ? ' (' + EX_PRICE_NOTE[x.id] + ')' : '';
+  return 'Motivo: ' + x.why.join('; ') + '. [' + x.refs.map(r => keys.indexOf(r) + 1).join(', ') + '] Explicação técnica: ' + (EX_TECH[x.id] || '') + (pn ? ' Composição do valor' + pn + '.' : '');
 }
+function examTag(x) { return x.type === 'ecg' ? 'ECG' : x.type === 'card' ? 'CARDÍACO' : 'LABORATÓRIO'; }
 
 function examsHTML() {
   const list = examSuggestions();
   const keys = examRefKeys(list);
-  const labs = list.filter(x => x.type === 'lab'), ecg = list.filter(x => x.type === 'ecg');
-  const row = x => `<label class="ex-row"><input type="checkbox" class="ex-chk" data-id="${x.id}" ${EXAM_OFF[x.id] ? '' : 'checked'}><span><strong>${escapeHtml(x.name)}</strong><em>${escapeHtml(examWhyText(x, keys))}</em></span></label>`;
+  const labs = list.filter(x => x.type === 'lab'), ecg = list.filter(x => x.type === 'ecg'), card = list.filter(x => x.type === 'card');
+  const row = x => `<label class="ex-row"><input type="checkbox" class="ex-chk" data-id="${x.id}" ${EXAM_OFF[x.id] ? '' : 'checked'}><span><strong>${escapeHtml(examLabel(x))}</strong><em>${escapeHtml(examWhyText(x, keys))}</em></span></label>`;
   const note = examNoteHTML(list);
   const body = (ecg.length ? `<div class="ex-group">Eletrocardiograma</div>${ecg.map(row).join('')}` : '')
     + (labs.length ? `<div class="ex-group">Exames de laboratório</div>${labs.map(row).join('')}` : '')
+    + (card.length ? `<div class="ex-group">Outros exames cardíacos</div>${card.map(row).join('')}` : '')
+    + (list.length ? `<p class="ex-note" id="exTotal">${examTotalLines(examIncluded(list)).map(escapeHtml).join('<br>')}</p>` : '')
     + (!list.length ? '<p>Nenhum exame de laboratório sugerido pelas respostas.</p>' : '')
     + (note ? `<p class="ex-note">${escapeHtml(note)} [${keys.indexOf('USPSTF18') + 1}]</p>` : '');
   return `<div class="exams-box"><div class="ns-title">Exames e eletrocardiograma sugeridos</div>
@@ -1281,8 +1386,9 @@ function examsPrintHTML() {
     <div class="pw-q"><div class="pw-opt">Sugestão para avaliação médica, conforme as respostas. Não é pedido de exames nem diagnóstico.</div></div>`;
   if (!list.length) html += `<div class="pw-q"><div class="pw-opt">Nenhum exame sugerido pelas respostas.</div></div>`;
   list.forEach(x => {
-    html += `<div class="pw-q"><div class="pw-qtext">${x.type === 'ecg' ? '[ECG] ' : '[Laboratório] '}${escapeHtml(x.name)}</div><div class="pw-opt">${escapeHtml(examWhyText(x, keys))}</div></div>`;
+    html += `<div class="pw-q"><div class="pw-qtext">${x.type === 'ecg' ? '[ECG] ' : x.type === 'card' ? '[Cardíaco] ' : '[Laboratório] '}${escapeHtml(examLabel(x))}</div><div class="pw-opt">${escapeHtml(examWhyText(x, keys))}</div></div>`;
   });
+  examTotalLines(list).forEach(l => { html += `<div class="pw-q"><div class="pw-opt marked">${escapeHtml(l)}</div></div>`; });
   const note = examNoteHTML(all);
   if (note) html += `<div class="pw-q"><div class="pw-opt">${escapeHtml(note)} [${keys.indexOf('USPSTF18') + 1}]</div></div>`;
   const used = examRefKeys(list.length ? list : []);
@@ -1300,8 +1406,9 @@ function pdfExams(pdf, flow) {
   flow.gap(4);
   if (!list.length) { flow.para('Nenhum exame sugerido pelas respostas.', { size: 9.5, lh: 1.4 }); flow.gap(4); }
   list.forEach(x => {
-    pdfExamItem(pdf, flow, x.type === 'ecg' ? 'ECG' : 'LABORATÓRIO', x.name, examWhyText(x, keys));
+    pdfExamItem(pdf, flow, examTag(x), examLabel(x), examWhyText(x, keys));
   });
+  examTotalLines(list).forEach((l, i) => { flow.para(l, { size: i ? 8 : 9.5, color: i ? PDF_C.gray : PDF_C.ink, lh: 1.4 }); flow.gap(2); });
   const note = examNoteHTML(all);
   if (note) { flow.para(note + ' [' + (keys.indexOf('USPSTF18') + 1) + ']', { size: 9, color: PDF_C.gray, lh: 1.4 }); flow.gap(4); }
   flow.gap(2);
@@ -1318,7 +1425,13 @@ function optionHTML(it, j, label) {
 function itemHTML(it) {
   const tag = it.optional ? ' <span class="opt-tag">· opcional</span>' : '';
   let body;
-  if (it.type === 'bmi') {
+  const txtHTML = it.text ? `<div class="conditional-field${textVisible(it) ? ' show' : ''}" data-textwrap="${it.id}">
+        <label for="txt_${it.id}">${it.text.label}</label>
+        <input type="text" id="txt_${it.id}" data-txt="${it.id}" placeholder="${it.text.ph || ''}"${it.text.numeric ? ' inputmode="decimal"' : ''} maxlength="${it.text.numeric ? 20 : 200}" autocomplete="off">
+      </div>` : '';
+  if (it.type === 'text') {
+    body = txtHTML;
+  } else if (it.type === 'bmi') {
     body = `<div class="bmi-row">
         <label class="bmi-field">Peso (kg)<input type="text" inputmode="decimal" id="bmiPeso" placeholder="Ex: 72" autocomplete="off"></label>
         <label class="bmi-field">Altura (cm)<input type="text" inputmode="decimal" id="bmiAltura" placeholder="Ex: 165" autocomplete="off"></label>
@@ -1326,10 +1439,10 @@ function itemHTML(it) {
       <label class="option bmi-ns"><input type="checkbox" id="bmiNs"> Não sabe peso ou altura</label>
       <div class="bmi-out" id="bmiOut"></div>`;
   } else {
-    body = `<div class="options${it.opts.length === 2 ? ' two' : ''}">${it.opts.map((o, j) => optionHTML(it, j, o)).join('')}</div>`;
+    body = `<div class="options${it.opts.length === 2 ? ' two' : ''}">${it.opts.map((o, j) => optionHTML(it, j, o)).join('')}</div>` + txtHTML;
   }
   return `<div class="question${it.optional ? ' optional' : ''}${isVisible(it) ? '' : ' is-hidden'}" data-qwrap="${it.id}">
-      <div class="qnum">${it.id}${tag}</div>
+      <div class="qnum">${numOf(it)}${tag}</div>
       <h3>${it.q}</h3>
       ${it.hint ? `<div class="q-hint">${it.hint}</div>` : ''}
       ${body}
@@ -1358,10 +1471,8 @@ function render() {
       </div>
       <div class="id-row">
         <label class="id-label" for="respondentCity">Município</label>
-        <select id="respondentCity">
-          <option value="">Selecione (opcional)</option>
-          ${MUNICIPIOS.map(m => `<option value="${m}">${m}</option>`).join('')}
-        </select>
+        <input type="text" id="respondentCity" list="municipiosList" placeholder="Digite o município (opcional)" autocomplete="off" maxlength="60">
+        <datalist id="municipiosList">${MUNICIPIOS.map(m => `<option value="${m}">`).join('')}</datalist>
       </div>
       <label class="consent-row" for="consentCheck">
         <input type="checkbox" id="consentCheck">
@@ -1388,12 +1499,22 @@ function render() {
   ITEMS.forEach(it => syncItemDom(it.id));
   syncBmiDom();
   updateVisibility();
+  syncTextDom();
   showPage(0);
 }
 
+function syncTextDom() {
+  ITEMS.forEach(it => {
+    if (!it.text) return;
+    const wrap = document.querySelector(`[data-textwrap="${it.id}"]`);
+    if (wrap) wrap.classList.toggle('show', textVisible(it));
+    const inp = document.getElementById('txt_' + it.id);
+    if (inp && document.activeElement !== inp) inp.value = TXT[it.id] || '';
+  });
+}
 function syncItemDom(id) {
   const it = ITEM[id];
-  if (!it || it.type === 'bmi') return;
+  if (!it || it.type === 'bmi' || it.type === 'text') return;
   const a = ANS[id];
   document.querySelectorAll(`.option[data-q="${id}"]`).forEach(opt => {
     const j = +opt.dataset.oi;
@@ -1428,6 +1549,8 @@ function updateVisibility() {
     if (el) el.classList.toggle('is-hidden', !vis);
     if (!vis && ANS[it.id] !== undefined) { delete ANS[it.id]; syncItemDom(it.id); }
   });
+  ITEMS.forEach(it => { if (it.text && !textVisible(it) && TXT[it.id]) delete TXT[it.id]; });
+  syncTextDom();
 }
 
 // Delegação de eventos (registrada uma vez só)
@@ -1470,7 +1593,8 @@ formArea.addEventListener('input', (e) => {
     ANS.P3 = a;
     syncBmiDom();
   }
-  if (['respondentName', 'respondentPhone', 'bmiPeso', 'bmiAltura'].includes(t.id)) { updateProgress(); saveDraft(); }
+  if (t.dataset && t.dataset.txt) { TXT[t.dataset.txt] = t.value; updateProgress(); saveDraft(); }
+  if (['respondentName', 'respondentPhone', 'respondentCity', 'bmiPeso', 'bmiAltura'].includes(t.id)) { updateProgress(); saveDraft(); }
 });
 formArea.addEventListener('change', (e) => {
   const t = e.target;
@@ -1648,7 +1772,7 @@ function showResult(total) {
       <button class="restart" id="restartBtn">Fazer nova avaliação</button>
     </div>
   `;
-  resultDiv.querySelectorAll('.ex-chk').forEach(c => c.addEventListener('change', () => { if (c.checked) delete EXAM_OFF[c.dataset.id]; else EXAM_OFF[c.dataset.id] = true; }));
+  resultDiv.querySelectorAll('.ex-chk').forEach(c => c.addEventListener('change', () => { if (c.checked) delete EXAM_OFF[c.dataset.id]; else EXAM_OFF[c.dataset.id] = true; const t = document.getElementById('exTotal'); if (t) t.innerHTML = examTotalLines(examIncluded(examSuggestions())).map(escapeHtml).join('<br>'); }));
   document.getElementById('genRiskPdfBtn').addEventListener('click', generateRiskPDF);
   document.getElementById('coordPdfBtn').addEventListener('click', () => generateDocument('risk', 'coordPdfArea'));
   document.getElementById('coordWaLink').href = waLink(COORD_WA, `Triagem MAVI — PDF em anexo. Código: ${refCode}`);
@@ -1703,6 +1827,7 @@ document.getElementById('clearBtn').addEventListener('click', () => {
 function resetAll() {
   try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
   for (const k in ANS) delete ANS[k];
+  for (const k in TXT) delete TXT[k];
   currentRecordId = null;
   currentRecordCreatedAt = null;
   resultComputed = null;
@@ -1728,6 +1853,7 @@ function saveDraft() {
       consent: isChecked('consentCheck'),
       consentContact: isChecked('consentContact'),
       ans: ANS,
+      txt: TXT,
       recordId: currentRecordId,
       recordCreatedAt: currentRecordCreatedAt,
       savedAt: new Date().toISOString(),
@@ -1747,6 +1873,7 @@ function restoreDraft() {
   if (draft.consentContact) document.getElementById('consentContact').checked = true;
   if (draft.recordId) { currentRecordId = draft.recordId; currentRecordCreatedAt = draft.recordCreatedAt || null; }
   if (draft.ans) Object.keys(draft.ans).forEach(k => { if (ITEM[k]) ANS[k] = draft.ans[k]; });
+  if (draft.txt) Object.keys(draft.txt).forEach(k => { if (ITEM[k] && ITEM[k].text && typeof draft.txt[k] === 'string') TXT[k] = draft.txt[k].slice(0, 200); });
 }
 
 
@@ -1805,8 +1932,8 @@ function pdfMeta() {
 }
 
 // Itens de cada documento
-const RISK_DOC_ITEMS = ITEMS.filter(it => CLINICAL_BLOCKS.includes(it.block) && it.id !== 'F2');
-const CRM_DOC_ITEMS = ITEMS.filter(it => it.id === 'F2' || SALES_BLOCKS.includes(it.block));
+const RISK_DOC_ITEMS = ITEMS.filter(it => CLINICAL_BLOCKS.includes(it.block) && it.id !== 'F2n');
+const CRM_DOC_ITEMS = ITEMS.filter(it => it.id === 'F2n' || SALES_BLOCKS.includes(it.block));
 function docItemMarks(it) {
   const a = ANS[it.id];
   if (it.type === 'multi') return Array.isArray(a) && a.length ? a : -1;
@@ -1819,8 +1946,10 @@ function itemsPrintHTML(items) {
   items.forEach(it => {
     if (!isVisible(it)) return;
     if (it.block !== lastBlock) { html += `<div class="pw-section-h">${escapeHtml(blockTitleOf(it.block))}</div>`; lastBlock = it.block; }
-    html += `<div class="pw-q"><div class="pw-qtext">${it.id}. ${escapeHtml(it.q)}</div>`;
-    if (it.type === 'bmi') {
+    html += `<div class="pw-q"><div class="pw-qtext">${numOf(it)}. ${escapeHtml(it.q)}</div>`;
+    if (it.type === 'text') {
+      html += txtOf(it) ? `<div class="pw-opt marked">${escapeHtml(txtOf(it))}</div>` : `<div class="pw-not-answered">Não respondido</div>`;
+    } else if (it.type === 'bmi') {
       html += `<div class="pw-opt marked">${escapeHtml(bmiText(ANS.P3))}</div>`;
     } else {
       const m = docItemMarks(it);
@@ -1829,6 +1958,7 @@ function itemsPrintHTML(items) {
         const on = Array.isArray(m) ? m.includes(j) : m === j;
         html += `<div class="pw-opt ${on ? 'marked' : ''}">${on ? '☒' : '☐'} ${escapeHtml(opt)}</div>`;
       });
+      if (it.text && txtOf(it)) html += `<div class="pw-opt marked">${escapeHtml(it.text.label)} ${escapeHtml(txtOf(it))}</div>`;
     }
     html += `</div>`;
   });
@@ -2244,8 +2374,9 @@ function pdfItems(pdf, flow, items) {
   items.forEach(it => {
     if (!isVisible(it)) return;
     if (it.block !== lastBlock) { pdfSection(pdf, flow, blockTitleOf(it.block)); lastBlock = it.block; }
-    if (it.type === 'bmi') pdfQuestion(pdf, flow, `${it.id}. ${it.q}`, [bmiText(ANS.P3)], 0);
-    else pdfQuestion(pdf, flow, `${it.id}. ${it.q}`, it.opts, docItemMarks(it));
+    if (it.type === 'bmi') pdfQuestion(pdf, flow, `${numOf(it)}. ${it.q}`, [bmiText(ANS.P3)], 0);
+    else if (it.type === 'text') pdfQuestion(pdf, flow, `${numOf(it)}. ${it.q}`, [txtOf(it) || 'Não respondido'], 0);
+    else pdfQuestion(pdf, flow, `${numOf(it)}. ${it.q}`, it.opts, docItemMarks(it), (it.text && txtOf(it)) ? [`${it.text.label} ${txtOf(it)}`] : null);
   });
 }
 
@@ -2522,8 +2653,9 @@ function prepareWaSummaryShare() {
 // - Cada questionário concluído é cifrado com a chave PÚBLICA no momento em
 //   que o resultado aparece (AES-GCM 256 com chave nova por registro; essa
 //   chave é protegida com RSA-OAEP). Nem quem preencheu consegue reabrir.
-// - Só são guardadas respostas de múltipla escolha, município, pontuação e
-//   data. NÃO são guardados nome, telefone, peso/altura exatos nem textos livres.
+// - São guardadas as respostas, município, pontuação, data e os poucos campos
+//   digitados do questionário (ex.: 'Qual doença?'). NÃO são guardados nome
+//   (fora da lista de contato autorizada), peso/altura exatos nem outros textos livres.
 // - Ao entrar com a senha, a chave privada é aberta só em memória (não
 //   exportável) e os registros são decifrados para montar os gráficos. Ao
 //   sair, por inatividade (10 min) ou ao fechar, tudo some da memória.
@@ -2532,7 +2664,7 @@ function prepareWaSummaryShare() {
 // não pode ser recuperada.
 
 const DB_NAME = 'mavi_triagem_db';
-const FORM_VERSION = '2026-10-v2';
+const FORM_VERSION = '2026-10-v3';
 const PBKDF2_ITER = 600000;
 const RSA_GEN = { name: 'RSA-OAEP', modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: 'SHA-256' };
 let currentRecordId = null;
@@ -2652,12 +2784,14 @@ async function decryptRecord(priv, rec) {
 function buildRecordPayload() {
   const ans = {};
   ITEMS.forEach(it => {
-    if (it.type === 'bmi') return;
+    if (it.type === 'bmi' || it.type === 'text') return;
     if (!isVisible(it)) { ans[it.id] = null; return; }
     const v = ANS[it.id];
     ans[it.id] = v === undefined ? null : (Array.isArray(v) ? v.slice() : v);
   });
   const b = bmiOf(ANS.P3);
+  const txt = {};
+  ITEMS.forEach(it => { if (it.text && txtOf(it)) txt[it.id] = txtOf(it).slice(0, 200); });
   return {
     id: currentRecordId,
     formVersion: FORM_VERSION,
@@ -2669,6 +2803,7 @@ function buildRecordPayload() {
     consentContact: isChecked('consentContact'),
     contact: isChecked('consentContact') ? { name: idVal('respondentName').slice(0, 120), phone: idVal('respondentPhone').replace(/\D/g, '').slice(0, 15) } : null,
     ans,
+    txt,
     bmiCat: (ANS.P3 && ANS.P3.ns) ? 'ns' : b === null ? null : b >= 30 ? 2 : b >= 25 ? 1 : 0,
     alert: resultComputed.alert,
     score: resultComputed.total,
@@ -3313,6 +3448,13 @@ function dedupeRecords(list) {
 }
 
 // Lê os dados que o app embute em cada PDF da triagem.
+function cleanTxt(t) {
+  const out = {};
+  if (t && typeof t === 'object' && !Array.isArray(t)) {
+    Object.keys(t).forEach(k => { if (ITEM[k] && ITEM[k].text && typeof t[k] === 'string') out[k] = t[k].slice(0, 200); });
+  }
+  return out;
+}
 async function readPdfRecord(file) {
   const buf = await file.arrayBuffer();
   const txt = new TextDecoder('iso-8859-1').decode(new Uint8Array(buf));
@@ -3334,7 +3476,7 @@ async function readPdfRecord(file) {
     municipio: typeof o.municipio === 'string' ? o.municipio.slice(0, 80) : null,
     consent: true, consentAt: o.consentAt || o.createdAt, consentContact: !!o.consentContact,
     contact: (o.consentContact && o.contact && typeof o.contact.name === 'string' && typeof o.contact.phone === 'string') ? { name: o.contact.name.slice(0, 120), phone: o.contact.phone.replace(/\D/g, '').slice(0, 15) } : null,
-    ans, bmiCat: o.bmiCat === undefined ? null : o.bmiCat, alert: !!o.alert, score: o.score,
+    ans, txt: cleanTxt(o.txt), bmiCat: o.bmiCat === undefined ? null : o.bmiCat, alert: !!o.alert, score: o.score,
     riskClass: o.riskClass, riskLabel: String(o.riskLabel || ''),
     steps: Array.isArray(o.steps) ? o.steps.filter(x => typeof x === 'string').slice(0, 20) : [],
   };
@@ -3637,11 +3779,11 @@ const RISK_FACTORS = [
   ['Açúcar alto ou diabetes', r => r.ans.D3 === 1 || r.ans.D3 === 2],
   ['Colesterol alto', r => r.ans.D4 === 1 || r.ans.D4 === 2],
   ['Problema nos rins', r => r.ans.D5 === 0],
-  ['Fuma ou parou há menos de 1 ano', r => r.ans.H1 === 2],
+  ['Fuma ou parou há menos de 1 ano', r => r.ans.H1 >= 2],
   ['Não faz exercício', r => r.ans.H2 === 2],
   ['Fritura ou refrigerante quase todo dia', r => r.ans.H3 === 2],
   ['Álcool mais de 2 vezes por semana', r => r.ans.H4 === 1],
-  ['Pai, mãe ou irmão com infarto ou AVC', r => r.ans.F1 === 0],
+  ['Pai, mãe ou alguém da família com infarto ou AVC', r => r.ans.F1 === 0],
 ];
 const UNKNOWN_FACTORS = [
   ['Pressão: não sabe ou não mede há mais de 1 ano', r => r.ans.D2 === 3],
@@ -3654,6 +3796,16 @@ const UNKNOWN_FACTORS = [
 const STEP_TITLES = ['Acompanhamento do coração', 'Exames de controle e consulta', 'Eletrocardiograma com laudo', 'Glicemia e perfil de colesterol',
   'Exames de sangue básicos', 'Check-up básico', 'Check-up do coração', 'Pacote para a família', 'Coleta em casa', 'Mensalidade MAVI com dependentes'];
 
+function idealVal(r) {
+  const t = r.txt && r.txt.I4n;
+  if (!t) return null;
+  const m = String(t).replace(/\./g, '').replace(',', '.').match(/\d+(\.\d+)?/);
+  return m ? parseFloat(m[0]) : null;
+}
+function idealBins(recs) {
+  const bins = [['Até R$ 30', 0, 30], ['R$ 31 a 50', 30, 50], ['R$ 51 a 80', 50, 80], ['R$ 81 a 120', 80, 120], ['Mais de R$ 120', 120, Infinity]];
+  return bins.map(([label, lo, hi]) => ({ label, n: recs.filter(r => { const v = idealVal(r); return v !== null && v > lo && v <= hi || (lo === 0 && v === 0); }).length }));
+}
 function ansDist(recs, id) {
   const it = ITEM[id];
   const answered = recs.filter(r => { const v = r.ans[id]; return it.type === 'multi' ? Array.isArray(v) && v.length : v !== null && v !== undefined; });
@@ -3846,7 +3998,7 @@ const PDF_HM = [[205, 226, 251], [158, 197, 244], [109, 167, 236], [57, 135, 229
 function dashboardModel(recs) {
   const total = recs.length;
   const highRisk = recs.filter(isHigh).length;
-  const interestExam = recs.filter(r => Array.isArray(r.ans.I1) && r.ans.I1.some(i => i === 0 || i === 1)).length;
+  const interestExam = recs.filter(r => r.ans.I3n === 0).length;
   const contactOk = recs.filter(r => r.consentContact).length;
   const cities = Array.from(new Set([...MUNICIPIOS, ...adminRecords.map(r => r.municipio).filter(Boolean)]));
   const statusPdf = { 'risk-alert': PDF_VIZ.critical, 'risk-high': PDF_VIZ.serious, 'risk-mod': PDF_VIZ.warn, 'risk-low': PDF_VIZ.good };
@@ -3866,16 +4018,20 @@ function dashboardModel(recs) {
     UNKNOWN_FACTORS.map(([label, fn]) => ({ label, n: recs.filter(fn).length })).sort((a, b) => b.n - a.n), total);
   push('Sinais de alerta', `Uma pessoa pode ter mais de um. Base: ${total}.`,
     ALERT_IDS.map(id => ({ label: ITEM[id].q.replace(/^O\(a\) senhor\(a\) /, '').replace(/\?$/, ''), n: recs.filter(r => r.ans[id] === 0).length })), total);
-  q('I1', 'Interesse em serviços', 'Pode marcar mais de um.');
-  q('I3', 'Interesse na mensalidade MAVI', '');
-  q('I2', 'Onde prefere fazer os exames', '');
+  q('I3n', 'Teria outro plano se a proposta fosse boa', '');
+  q('I1n', 'Satisfeito(a) com o plano atual', '');
+  q('I2n', 'Sabe o que é consulta online', '');
+  push('Valor ideal do plano para a família', `Valor mensal digitado pelo captador (R$). Base: ${recs.filter(r => idealVal(r) !== null).length}.`, idealBins(recs), recs.filter(r => idealVal(r) !== null).length);
   q('C4', 'O que mais atrapalha cuidar da saúde', '', true);
-  q('C6', 'Como costuma fazer exames', '');
-  q('C3', 'Plano de saúde ou cartão de descontos', '');
-  q('C1', 'Última consulta ou check-up', '');
+  q('C6n', 'Como faz exames de rotina', '');
+  q('C3n', 'Plano funerário ou cartão de desconto', 'Pode marcar mais de um.');
   q('C5', 'Últimos exames de sangue', '');
   q('C2', 'Último eletrocardiograma', '');
-  q('F2', 'Outras pessoas da casa que tomam remédio ou precisam de exames', '');
+  q('F2n', 'Alguém da família com problema de saúde', '');
+  q('D7n', 'Gordura no fígado', '');
+  q('D8n', 'Problema de circulação e/ou varizes', '');
+  q('D9n', 'Problema nos ossos', '');
+  q('D10n', 'Emocional ultimamente', '');
   q('P2', 'Faixa etária', '');
   push('Municípios', `Base: ${total}.`, [...cities.map(c => ({ label: c, n: recs.filter(r => r.municipio === c).length })),
     { label: 'Não informado', n: recs.filter(r => !r.municipio).length }].filter(it => it.n > 0).sort((a, b) => b.n - a.n), total);
@@ -3884,7 +4040,7 @@ function dashboardModel(recs) {
     kpis: [
       ['Questionários', String(total), 'no filtro atual'],
       ['Alerta ou risco alto', fmtPct(highRisk, total), `${highRisk} pessoa${highRisk === 1 ? '' : 's'}`],
-      ['Interesse em exames ou ECG', fmtPct(interestExam, total), `${interestExam} pessoa${interestExam === 1 ? '' : 's'}`],
+      ['Abertos a outro plano', fmtPct(interestExam, total), `${interestExam} pessoa${interestExam === 1 ? '' : 's'}`],
       ['Autorizaram contato', fmtPct(contactOk, total), `${contactOk} pessoa${contactOk === 1 ? '' : 's'}`],
     ],
     charts,
@@ -4012,7 +4168,7 @@ function buildDashboardPDF() {
   });
   flow.y += kh + 18;
   pdfEvolution(pdf, flow, recs);
-  m.charts.forEach(ch => pdfBarChart(pdf, flow, ch));
+  m.charts.map(dashPdfChart).filter(Boolean).forEach(ch => pdfBarChart(pdf, flow, ch));
   pdfHeatmap(pdf, flow, recs);
   pdfDisclaimer(pdf, flow, 'Relatório agregado, sem identificação de participantes. São respostas autorreferidas e o resultado de uma triagem — não são diagnósticos e não indicam direito a benefício. ' + (adminCloudMode ? 'Reúne os questionários enviados por todos os aparelhos, depois da criação da senha da área restrita.' : 'Mostra apenas os questionários concluídos no aparelho onde o relatório foi gerado, depois da criação da senha da área restrita.') + ' Trate este documento como confidencial.');
   pdfFooters(pdf, `MAVI Assistência à Saúde — relatório agregado da área restrita. Gerado em ${dateStr} às ${timeStr}.`);
@@ -4075,7 +4231,7 @@ function examAdminHTML(recs) {
     let detail = '';
     if (open) {
       const keys = []; list.forEach(x => x.refs.forEach(k => { if (!keys.includes(k)) keys.push(k); }));
-      const row = x => `<label class="ex-row"><input type="checkbox" class="ex-chk-adm" data-id="${x.id}" ${admExamOff[x.id] ? '' : 'checked'}><span><strong>${escapeHtml(x.name)}</strong><em>${escapeHtml(examWhyText(x, keys))}</em></span></label>`;
+      const row = x => `<label class="ex-row"><input type="checkbox" class="ex-chk-adm" data-id="${x.id}" ${admExamOff[x.id] ? '' : 'checked'}><span><strong>${escapeHtml(examLabel(x))}</strong><em>${escapeHtml(examWhyText(x, keys))}</em></span></label>`;
       detail = `<div style="flex-basis:100%;margin-top:8px">
         ${list.map(row).join('')}
         <p class="adm-sub" style="margin:8px 0 0">Só os exames marcados entram no pedido. O PDF sai sem nome do paciente e sem nome ou CRM do médico; assinatura e carimbo ficam em branco.</p>
@@ -4130,7 +4286,8 @@ function buildExamOrderPDF(rec, list) {
     pdfMetaBox(pdf, flow, rows);
   }
   pdfSection(pdf, flow, 'Exames solicitados');
-  list.forEach(x => pdfExamItem(pdf, flow, x.type === 'ecg' ? 'ECG' : 'LABORATÓRIO', x.name, examWhyText(x, keys)));
+  list.forEach(x => pdfExamItem(pdf, flow, examTag(x), examLabel(x), examWhyText(x, keys)));
+  examTotalLines(list).forEach((l, i) => { flow.para(l, { size: i ? 8 : 9.5, color: i ? PDF_C.gray : PDF_C.ink, lh: 1.4 }); flow.gap(2); });
   flow.gap(6);
   flow.para('Referências', { size: 9.5, lh: 1.4 });
   keys.forEach((k, i) => { flow.para((i + 1) + '. ' + EX_REFS[k], { size: 8, color: PDF_C.gray, lh: 1.35 }); flow.gap(2); });
@@ -4158,10 +4315,8 @@ const RISK_FILTERS = [
 ];
 const INTEREST_FILTERS = [
   ['', 'Qualquer interesse'],
-  ['plan', 'Interesse na mensalidade (plano)'],
-  ['ecg', 'Interesse em eletrocardiograma'],
-  ['blood', 'Interesse em exames de sangue'],
-  ['consult', 'Interesse em consulta'],
+  ['plan', 'Teria outro plano (aberto a proposta)'],
+  ['unsat', 'Insatisfeito(a) com o plano atual'],
 ];
 function recRiskMatch(r, f) {
   if (f === 'alert') return isAlertRec(r);
@@ -4171,10 +4326,8 @@ function recRiskMatch(r, f) {
   return true;
 }
 function recInterestMatch(r, f) {
-  if (f === 'plan') return ansHas(r, 'I3', 0) || ansHas(r, 'I3', 1);
-  if (f === 'ecg') return ansHas(r, 'I1', 1);
-  if (f === 'blood') return ansHas(r, 'I1', 0);
-  if (f === 'consult') return ansHas(r, 'I1', 2) || ansHas(r, 'I1', 3);
+  if (f === 'plan') return ansHas(r, 'I3n', 0);
+  if (f === 'unsat') return ansHas(r, 'I1n', 1);
   return true;
 }
 function contactRows(recs) {
@@ -4203,12 +4356,9 @@ function fmtPhone(p) {
 }
 function interestTags(r) {
   const t = [];
-  if (ansHas(r, 'I3', 0)) t.push('Plano: sim'); else if (ansHas(r, 'I3', 1)) t.push('Plano: talvez');
-  if (ansHas(r, 'I1', 1)) t.push('ECG');
-  if (ansHas(r, 'I1', 0)) t.push('Exames de sangue');
-  if (ansHas(r, 'I1', 2)) t.push('Consulta pelo celular');
-  if (ansHas(r, 'I1', 3)) t.push('Consulta presencial');
-  if (ansHas(r, 'I2', 0)) t.push('Coleta em casa');
+  if (ansHas(r, 'I3n', 0)) t.push('Teria outro plano');
+  if (ansHas(r, 'I1n', 1)) t.push('Insatisfeito(a) com o plano atual');
+  if (ansHas(r, 'I2n', 0)) t.push('Sabe o que é consulta online');
   return t;
 }
 function contactsHTML(recs) {
@@ -4217,9 +4367,7 @@ function contactsHTML(recs) {
   const shown = rows.slice(0, adminContactFilters.limit);
   const list = shown.map(r => {
     const first = (r.contact.name || '').trim().split(/\s+/)[0] || '';
-    const msg = isAlertRec(r)
-      ? `Olá${first ? ', ' + first : ''}! Aqui é da MAVI Assistência à Saúde. Gostaríamos de saber como você está e orientar sobre a avaliação de saúde do coração.`
-      : `Olá${first ? ', ' + first : ''}! Aqui é da MAVI Assistência à Saúde. Falamos com você sobre a triagem de saúde do coração. Posso te explicar os próximos passos?`;
+    const msg = `Olá${first ? ', ' + first : ''}! Aqui é do Mavi Assistência em Saúde, gostaríamos de saber se a senhora gostaria de receber dicas e orientações de saúde.`;
     const href = `https://wa.me/${waDigits(r.contact.phone)}?text=${encodeURIComponent(msg)}`;
     const tags = interestTags(r).map(x => `<span class="ct-tag">${escapeHtml(x)}</span>`).join('');
     const riskCls = isAlertRec(r) ? 'alert' : (r.riskClass === 'risk-high' ? 'high' : r.riskClass === 'risk-mod' ? 'mod' : 'low');
@@ -4314,9 +4462,9 @@ function donutHTML(recs) {
 
 function interestBarsHTML(recs) {
   const total = recs.length;
-  const ie = recs.filter(r => Array.isArray(r.ans.I1) && r.ans.I1.some(i => i === 0 || i === 1)).length;
+  const ie = recs.filter(r => r.ans.I3n === 0).length;
   const co = recs.filter(r => r.consentContact).length;
-  const bars = [['Interesse em exames ou ECG', ie, '#1A5FA8'], ['Autorizaram contato', co, '#2E9E5B']];
+  const bars = [['Abertos a outro plano', ie, '#1A5FA8'], ['Autorizaram contato', co, '#2E9E5B']];
   const H = 110;
   return `<div class="vbars">${bars.map(([l, n, c]) => `<div class="vbar"><div class="vv">${total ? fmtPct(n, total) : '—'}</div><div class="vb" style="height:${total ? Math.max(3, Math.round(n / total * H)) : 3}px;background:${c}"></div></div>`).join('')}</div>
     <div class="vlab">${bars.map(b => `<span>${b[0]}</span>`).join('')}</div>`;
@@ -4379,6 +4527,139 @@ function flowHTML(recs) {
   </section>`;
 }
 
+// ---------- Listas do painel: ocultar zerados, ordenar, selecionar, fixar, mover e arrastar ----------
+const DASH_KEY = 'mavi_dash_lists_v1';
+const DASH_DEFAULT = () => ({ hideZero: false, sort: 'manual', unchecked: {}, hidden: {}, pinned: {}, order: {} });
+let dashPrefs = (() => { try { return Object.assign(DASH_DEFAULT(), JSON.parse(localStorage.getItem(DASH_KEY) || '{}')); } catch (e) { return DASH_DEFAULT(); } })();
+function dashSave() { try { localStorage.setItem(DASH_KEY, JSON.stringify(dashPrefs)); } catch (e) {} }
+function dkey(ch, it) { return ch.title + '|' + it.label; }
+function dashOrdered(ch, includeHidden) {
+  let arr = ch.items.map((it, i) => ({ it, i }));
+  const so = dashPrefs.sort;
+  if (so === 'desc') arr.sort((a, b) => b.it.n - a.it.n || a.i - b.i);
+  else if (so === 'asc') arr.sort((a, b) => a.it.n - b.it.n || a.i - b.i);
+  else if (so === 'az') arr.sort((a, b) => a.it.label.localeCompare(b.it.label, 'pt-BR') || a.i - b.i);
+  else {
+    const ord = dashPrefs.order[ch.title];
+    if (ord) { const pos = l => { const k = ord.indexOf(l); return k < 0 ? 1e6 : k; }; arr.sort((a, b) => pos(a.it.label) - pos(b.it.label) || a.i - b.i); }
+  }
+  arr.sort((a, b) => (dashPrefs.pinned[dkey(ch, b.it)] ? 1 : 0) - (dashPrefs.pinned[dkey(ch, a.it)] ? 1 : 0));
+  let out = arr.map(x => x.it);
+  if (!includeHidden) out = out.filter(it => !dashPrefs.hidden[dkey(ch, it)] && !(dashPrefs.hideZero && it.n === 0));
+  return out;
+}
+// Para o PDF: só o que está visível e marcado
+function dashPdfChart(ch) {
+  if (!ch.base) return ch;
+  const items = dashOrdered(ch).filter(it => !dashPrefs.unchecked[dkey(ch, it)]);
+  return items.length ? Object.assign({}, ch, { items }) : null;
+}
+function dashListHTML(ch) {
+  if (!ch.base) return `<div class="adm-empty">Sem dados para os filtros atuais.</div>`;
+  const shown = dashOrdered(ch);
+  const hiddenN = ch.items.filter(it => dashPrefs.hidden[dkey(ch, it)]).length;
+  const rows = shown.map(it => {
+    const key = dkey(ch, it), w = Math.min(100, it.n / ch.base * 100), zero = it.n === 0;
+    const color = it.color || it.css || 'var(--viz-1)';
+    const attrs = `data-ch="${escapeHtml(ch.title)}" data-label="${escapeHtml(it.label)}"`;
+    return `<div class="dl-row${zero ? ' dl-zero' : ''}" ${attrs}>
+      <span class="dl-handle" title="Arraste para reordenar" aria-label="Arrastar para reordenar">⠿</span>
+      <input type="checkbox" class="dl-chk" ${attrs} ${dashPrefs.unchecked[key] ? '' : 'checked'} aria-label="Incluir ${escapeHtml(it.label)} no gráfico e no relatório">
+      <div class="dl-main" title="${escapeHtml(it.label)}: ${it.n} (${fmtPct(it.n, ch.base)})">
+        <div class="hb-label"><span class="hb-key">${ch.dots ? `<span class="hb-dot" style="background:${color}"></span>` : ''}${escapeHtml(it.label)}</span><span class="hb-val">${fmtPct(it.n, ch.base)} · ${fmtInt(it.n)}</span></div>
+        <div class="hb-track"><div class="hb-fill" style="width:${w}%;${zero ? '' : 'min-width:3px;'}background:${zero ? 'transparent' : color}"></div></div>
+      </div>
+      <div class="dl-act">
+        <button type="button" class="${dashPrefs.pinned[key] ? 'on' : ''}" data-dl="pin" ${attrs} title="Fixar no topo" aria-label="Fixar no topo">📌</button>
+        <button type="button" data-dl="up" ${attrs} title="Subir" aria-label="Subir">▲</button>
+        <button type="button" data-dl="down" ${attrs} title="Descer" aria-label="Descer">▼</button>
+        <button type="button" data-dl="hide" ${attrs} title="Ocultar" aria-label="Ocultar">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+  const empty = shown.length ? '' : `<div class="adm-empty">Todos os itens estão ocultos ou zerados.</div>`;
+  const hid = hiddenN ? `<div class="dl-hid">${hiddenN} item(ns) oculto(s) · <button type="button" data-dl="unhide" data-ch="${escapeHtml(ch.title)}">mostrar</button></div>` : '';
+  const table = `<details class="adm-tbl"><summary>Ver dados em tabela</summary>
+    <table class="adm-table"><thead><tr><th>Categoria</th><th class="num">Qtde</th><th class="num">%</th></tr></thead>
+    <tbody>${shown.map(it => `<tr><td>${escapeHtml(it.label)}</td><td class="num">${fmtInt(it.n)}</td><td class="num">${fmtPct(it.n, ch.base)}</td></tr>`).join('')}</tbody>
+    <tfoot><tr><td>Base</td><td class="num">${fmtInt(ch.base)}</td><td></td></tr></tfoot></table></details>`;
+  return `<div class="dl-list" data-ch="${escapeHtml(ch.title)}">${rows}</div>${empty}${hid}${table}`;
+}
+function dashToolbarHTML() {
+  const o = (v, l) => `<option value="${v}" ${dashPrefs.sort === v ? 'selected' : ''}>${l}</option>`;
+  return `<section class="adm-card dl-toolbar"><h3>Listas dos gráficos</h3>
+    <div class="dl-ctl">
+      <label><input type="checkbox" class="dl-switch" id="dlHideZero" ${dashPrefs.hideZero ? 'checked' : ''}> Ocultar zerados (0%)</label>
+      <label>Ordenação <select id="dlSort">${o('manual', 'Ordem manual')}${o('desc', 'Maior porcentagem')}${o('asc', 'Menor porcentagem')}${o('az', 'Ordem alfabética (A-Z)')}</select></label>
+      <button class="adm-btn" id="dlReset" type="button" style="margin:0">Restaurar listas</button>
+    </div>
+    <p class="adm-sub" style="margin:8px 0 0">Marque o que entra nos gráficos e no relatório em PDF. Arraste o ⠿ para reordenar, ou use fixar (📌), subir (▲), descer (▼) e ocultar (✕).</p>
+  </section>`;
+}
+function bindDashLists(model, rerender) {
+  const chartOf = t => model.charts.find(c => c.title === t);
+  const hz = document.getElementById('dlHideZero');
+  if (hz) hz.addEventListener('change', () => { dashPrefs.hideZero = hz.checked; dashSave(); rerender(); });
+  const so = document.getElementById('dlSort');
+  if (so) so.addEventListener('change', () => { dashPrefs.sort = so.value; dashSave(); rerender(); });
+  const rs = document.getElementById('dlReset');
+  if (rs) rs.addEventListener('click', () => { dashPrefs = DASH_DEFAULT(); dashSave(); rerender(); });
+  const saveOrder = (ch, labels) => {
+    const rest = ch.items.map(i => i.label).filter(l => !labels.includes(l));
+    dashPrefs.order[ch.title] = labels.concat(rest); dashPrefs.sort = 'manual'; dashSave();
+  };
+  adminArea.querySelectorAll('.dl-chk').forEach(c => c.addEventListener('change', () => {
+    const ch = chartOf(c.dataset.ch); if (!ch) return;
+    const k = ch.title + '|' + c.dataset.label;
+    if (c.checked) delete dashPrefs.unchecked[k]; else dashPrefs.unchecked[k] = true;
+    dashSave();
+  }));
+  adminArea.querySelectorAll('[data-dl]').forEach(b => b.addEventListener('click', () => {
+    const ch = chartOf(b.dataset.ch); if (!ch) return;
+    const act = b.dataset.dl, label = b.dataset.label, k = ch.title + '|' + label;
+    if (act === 'pin') { if (dashPrefs.pinned[k]) delete dashPrefs.pinned[k]; else dashPrefs.pinned[k] = true; }
+    else if (act === 'hide') dashPrefs.hidden[k] = true;
+    else if (act === 'unhide') ch.items.forEach(it => delete dashPrefs.hidden[ch.title + '|' + it.label]);
+    else {
+      const labels = dashOrdered(ch).map(i => i.label), i = labels.indexOf(label), j = act === 'up' ? i - 1 : i + 1;
+      if (i < 0 || j < 0 || j >= labels.length) return;
+      [labels[i], labels[j]] = [labels[j], labels[i]];
+      saveOrder(ch, labels);
+    }
+    dashSave(); rerender();
+  }));
+  // arrastar e soltar (mouse e toque)
+  adminArea.querySelectorAll('.dl-list').forEach(list => {
+    let dragRow = null;
+    list.addEventListener('pointerdown', e => {
+      const h = e.target.closest('.dl-handle'); if (!h) return;
+      dragRow = h.closest('.dl-row'); dragRow.classList.add('dragging');
+      try { h.setPointerCapture(e.pointerId); } catch (err) {}
+      e.preventDefault();
+    });
+    list.addEventListener('pointermove', e => {
+      if (!dragRow) return;
+      const others = Array.from(list.children).filter(r => r !== dragRow && r.classList.contains('dl-row'));
+      let placed = false;
+      for (const r of others) {
+        const rc = r.getBoundingClientRect();
+        if (e.clientY < rc.top + rc.height / 2) { if (dragRow.nextSibling !== r) list.insertBefore(dragRow, r); placed = true; break; }
+      }
+      if (!placed && others.length) { const last = others[others.length - 1]; if (last.nextSibling !== dragRow) last.after(dragRow); }
+    });
+    const end = () => {
+      if (!dragRow) return;
+      const ch = chartOf(list.dataset.ch);
+      dragRow.classList.remove('dragging'); dragRow = null;
+      if (!ch) return;
+      saveOrder(ch, Array.from(list.querySelectorAll('.dl-row')).map(r => r.dataset.label));
+      rerender();
+    };
+    list.addEventListener('pointerup', end);
+    list.addEventListener('pointercancel', end);
+  });
+}
+
 function renderDashboard() {
   const recs = adminFiltered();
   const total = recs.length;
@@ -4410,7 +4691,7 @@ function renderDashboard() {
     </div>`;
 
   const kpis = `<div class="kpi-grid">${model.kpis.map(([l, v, f]) => `<div class="kpi"><div class="k-label">${l}</div><div class="k-value">${v}</div><div class="k-foot">${f}</div></div>`).join('')}</div>`;
-  const chartCards = model.charts.slice(1).map(ch => admCard(ch.title, ch.sub, hbars(ch.items.map(it => it.css ? Object.assign({}, it, { color: it.css }) : it), ch.base, { dots: ch.dots }))).join('');
+  const chartCards = model.charts.slice(1).map(ch => admCard(ch.title, ch.sub, dashListHTML(ch))).join('');
 
   const notes = [];
   if (typeof adminSenders === 'number' && adminSenders) notes.push(`Recebidos de ${adminSenders} pessoa(s) que preencheram (captadores e você).`);
@@ -4437,6 +4718,7 @@ function renderDashboard() {
       <p class="adm-sub" style="margin:8px 0 0">Gera um PDF com os números e gráficos abaixo, usando os filtros escolhidos. Sem nomes nem telefones.</p>
       <div id="admPdfArea"></div>
     </section>
+    ${dashToolbarHTML()}
     ${chartCards}
     ${admCard('Quando os questionários são concluídos', 'Mês × período do dia (manhã 5h–12h, tarde 12h–18h, noite 18h–5h). Contagens reais; meses sem coleta não aparecem.', heatmapHTML(recs))}
     <div class="adm-note">
@@ -4469,6 +4751,7 @@ function renderDashboard() {
   const ctMore = document.getElementById('ctMore');
   if (ctMore) ctMore.addEventListener('click', () => { adminContactFilters.limit += 30; rerender(); });
   bindRecoveryCard();
+  bindDashLists(model, rerender);
   adminArea.querySelectorAll('[data-fase]').forEach(sel => sel.addEventListener('change', () => {
     const m = faseRead(); m[sel.getAttribute('data-fase')] = sel.value; faseWrite(m); rerender();
   }));
