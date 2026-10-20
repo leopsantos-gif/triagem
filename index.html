@@ -659,6 +659,54 @@
   .hb-track { height: 14px; background: var(--viz-track); border-radius: 0 4px 4px 0; }
   .hb-fill { height: 100%; border-radius: 0 4px 4px 0; }
   .dl-toolbar { position: sticky; top: 0; z-index: 5; }
+  .dc-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  .dc-pdf { border: 1.5px solid #1A4F8F; background: #fff; color: #0B3A6B; border-radius: 999px; font-size: 12px; font-weight: 700; padding: 6px 12px; cursor: pointer; white-space: nowrap; flex: none; font-family: inherit; }
+  .dc-pdf:hover { background: #E3EEF9; }
+  .dc-msg { font-size: 12.5px; margin-top: 8px; color: var(--viz-text-2); }
+  .dc-msg:empty { display: none; }
+  .dl-track { position: relative; height: 30px; background: #E7ECF3; border-radius: 9px; overflow: hidden; }
+  .dl-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 9px; }
+  .dl-val { position: absolute; top: 50%; transform: translateY(-50%); font-size: 13.5px; font-weight: 600; color: #10243C; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .dl-val.in { right: 10px; color: #fff; }
+  .dl-main .hb-label { font-size: 14px; }
+  .ov-head { margin-top: 14px; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 10px; }
+  .ov-brand { font-size: 38px; font-weight: 800; color: #0B2A5B; line-height: 1; letter-spacing: -.02em; }
+  .ov-sub { font-size: 16px; color: #1B2B40; margin-top: 4px; }
+  .ov-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .ov-chip { background: #DCE8F6; border-radius: 999px; padding: 7px 14px; font-size: 12.5px; color: #33475E; }
+  .ov-chip b { display: block; color: #0B1B2E; font-size: 13.5px; }
+  .ov-grid { display: grid; gap: 12px; grid-template-columns: 1fr; margin-top: 12px; }
+  @media (min-width: 900px) { .ov-grid { grid-template-columns: .8fr 1.45fr 1.25fr; } }
+  .ov-col { display: flex; flex-direction: column; gap: 12px; }
+  .ov-card { background: #fff; border: 1px solid #DDE6F0; border-radius: 20px; padding: 16px; box-shadow: 0 4px 16px rgba(11,58,107,.07); }
+  .ov-card h3 { text-align: center; font-size: 18px; margin: 0 0 8px; color: #0B1B2E; font-weight: 800; }
+  .ov-kpi { text-align: center; }
+  .ov-kpi .t { font-size: 17px; font-weight: 800; color: #0B1B2E; }
+  .ov-kpi .v { font-size: 34px; font-weight: 800; color: #0B1B2E; line-height: 1.15; margin: 6px 0; }
+  .ov-kpi .f { font-size: 14.5px; color: #33475E; }
+  .ov-kpi.red { background: #FDECEC; border: 2px solid #E49C9C; }
+  .ov-kpi.red .t, .ov-kpi.red .v, .ov-kpi.red .f { color: #C0262D; }
+  .ov-note { font-size: 11.5px; color: #33475E; margin-top: 8px; }
+  .ov-sig { margin: 12px 0; }
+  .ov-sig .l { font-size: 14.5px; margin-bottom: 4px; color: #10243C; }
+  .ov-funnel { display: flex; flex-direction: column; align-items: center; gap: 3px; margin: 6px 0 12px; }
+  .ov-funnel div { height: 38px; color: #fff; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; clip-path: polygon(0 0, 100% 0, 93% 100%, 7% 100%); text-align: center; padding: 0 12px; }
+  .ov-people { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; max-width: 250px; margin: 0 auto; }
+  .ov-people svg { width: 100%; height: auto; fill: #2E55A0; }
+  .ov-people svg.off { fill: #CBD3DD; }
+  .ov-q { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; justify-content: center; }
+  .ov-q .txt { font-size: 15px; font-weight: 600; color: #10243C; max-width: 190px; }
+  .ov-h4 { text-align: center; font-size: 17px; font-weight: 800; margin: 8px 0 6px; color: #0B1B2E; }
+  .ov-pdfrow { display: flex; justify-content: flex-end; margin-top: 8px; }
+  details.ac { border: 1px solid #DDE6F0; border-radius: 14px; margin-top: 10px; background: #fff; }
+  details.ac > summary { cursor: pointer; padding: 12px 14px; font-weight: 700; font-size: 14.5px; display: flex; gap: 10px; align-items: flex-start; list-style: none; color: #10243C; }
+  details.ac > summary::-webkit-details-marker { display: none; }
+  .ac-n { background: #0B3A6B; color: #fff; border-radius: 50%; width: 24px; height: 24px; flex: none; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; }
+  .ac-body { padding: 0 16px 14px 48px; font-size: 13.5px; line-height: 1.5; color: #1B2B40; }
+  .ac-body h4 { margin: 10px 0 4px; font-size: 13px; color: #0B3A6B; text-transform: uppercase; letter-spacing: .04em; }
+  .ac-body ul, .ac-body ol { margin: 0; padding-left: 18px; }
+  .ac-body li { margin-bottom: 5px; }
+  .ac-ref { font-size: 12px; color: #55657A; margin-top: 8px; }
   .dl-ctl { display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: center; margin-top: 8px; }
   .dl-ctl label { font-size: 13px; display: inline-flex; align-items: center; gap: 8px; color: var(--viz-text-1); }
   .dl-ctl select { padding: 7px 8px; border-radius: 8px; border: 1px solid var(--viz-grid, #cfd8e3); font-size: 13px; font-family: inherit; background: transparent; color: inherit; }
@@ -4527,6 +4575,316 @@ function flowHTML(recs) {
   </section>`;
 }
 
+// ---------- Referências das ações recomendadas (conferidas no PubMed) ----------
+EX_REFS.CP21 = 'Gulati M, et al. 2021 AHA/ACC/ASE/CHEST/SAEM/SCCT/SCMR Guideline for the Evaluation and Diagnosis of Chest Pain. Circulation. 2021;144(22):e368-e454. doi:10.1161/CIR.0000000000001029 (PMID 34709879)';
+EX_REFS.TOB21 = 'US Preventive Services Task Force (Krist AH, et al.). Interventions for Tobacco Smoking Cessation in Adults, Including Pregnant Persons: Recommendation Statement. JAMA. 2021;325(3):265-279. doi:10.1001/jama.2020.25019 (PMID 33464343)';
+EX_REFS.PA20 = 'Bull FC, et al. World Health Organization 2020 guidelines on physical activity and sedentary behaviour. Br J Sports Med. 2020;54(24):1451-1462. doi:10.1136/bjsports-2020-102955 (PMID 33239350)';
+EX_REFS.PHQ03 = 'Kroenke K, Spitzer RL, Williams JBW. The Patient Health Questionnaire-2: validity of a two-item depression screener. Med Care. 2003;41(11):1284-1292. doi:10.1097/01.MLR.0000093487.78664.3C (PMID 14583691)';
+EX_REFS.DEP23 = 'US Preventive Services Task Force (Barry MJ, et al.). Screening for Depression and Suicide Risk in Adults: Recommendation Statement. JAMA. 2023;329(23):2057-2067. doi:10.1001/jama.2023.9297 (PMID 37338872)';
+EX_REFS.WHO00 = 'World Health Organization. Obesity: preventing and managing the global epidemic. Report of a WHO Consultation. WHO Technical Report Series 894. Geneva: WHO; 2000.';
+
+function ovData(recs) {
+  const cnt = fn => recs.filter(fn).length;
+  const sign = id => cnt(r => r.ans && r.ans[id] === 0);
+  const exr = exRelRead();
+  return {
+    N: recs.length,
+    signs: [['Dor ou aperto no peito ao esforço', sign('A1')], ['Falta de ar fora do normal', sign('A2')], ['Desmaio ou quase desmaio', sign('A3')], ['Coração acelerado/irregular', sign('A4')]].sort((a, b) => b[1] - a[1]),
+    noBmi: cnt(r => r.bmiCat === 'ns' || r.bmiCat === null || r.bmiCat === undefined),
+    alerts: cnt(isAlertRec),
+    contact: cnt(r => r.consentContact),
+    released: cnt(r => exr[r.id]),
+  };
+}
+function dashMetaRows(total) {
+  const { dateStr, timeStr } = pdfMeta();
+  const periodLabel = { '7': 'Últimos 7 dias', '30': 'Últimos 30 dias', '90': 'Últimos 90 dias', '365': 'Últimos 12 meses', 'all': 'Todo o período' }[adminFilters.period];
+  const cityLabel = adminFilters.city === '' ? 'Todos' : adminFilters.city === '__none' ? 'Não informado' : adminFilters.city;
+  const ageLabel = adminFilters.age === '' ? 'Todas' : ITEM.P2.opts[+adminFilters.age];
+  return [['Período', periodLabel], ['Município', cityLabel], ['Faixa etária', ageLabel], ['Questionários no filtro', String(total)], ['Gerado em', `${dateStr} às ${timeStr}`]];
+}
+
+// Ações recomendadas: cruzam os números do painel com as respostas informadas (cada pessoa do filtro atual)
+function actionsModel(recs) {
+  const N = recs.length;
+  if (!N) return [];
+  const A = r => r.ans || {};
+  const f = {
+    has: r => A(r).D2 === 1 || A(r).D2 === 2, dm: r => A(r).D3 === 2, smoke: r => A(r).H1 >= 2, fam: r => A(r).F1 === 0,
+    a40: r => A(r).P2 >= 1, a50: r => A(r).P2 >= 2, a60: r => A(r).P2 >= 3, obese: r => r.bmiCat === 2, over: r => r.bmiCat === 1 || r.bmiCat === 2,
+    colh: r => A(r).D4 === 1 || A(r).D4 === 2, cvd: r => A(r).D1 === 0,
+  };
+  const C = (list, fn) => list.filter(fn).length;
+  const P = n => `${n} de ${N} (${fmtPct(n, N)})`;
+  const out = [];
+  const push = o => { if (o.n > 0) out.push(o); };
+
+  // 1) Sinais de alerta
+  const al = recs.filter(isAlertRec);
+  if (al.length) {
+    const sg = id => C(recs, r => A(r)[id] === 0);
+    const nF = r => [f.has(r), f.dm(r), f.smoke(r), f.fam(r), f.a60(r), f.obese(r), f.cvd(r)].filter(Boolean).length;
+    const top = al.filter(r => nF(r) >= 2).length, wc = C(al, r => r.consentContact);
+    push({ id: 'alerta', n: al.length,
+      headline: `Priorizar contato com os ${al.length} casos com sinal de alerta` + (sg('A1') ? ` (${sg('A1')} com dor ou aperto no peito ao esforço)` : ''),
+      data: [
+        `${P(al.length)} pessoas têm ao menos um sinal de alerta: dor ou aperto no peito ao esforço ${sg('A1')}, falta de ar fora do normal ${sg('A2')}, desmaio ou quase desmaio ${sg('A3')}, coração disparado ou descompassado ${sg('A4')}.`,
+        `Cruzamento com fatores de risco informados: entre os alertas, ${C(al, f.has)} têm pressão alta, ${C(al, f.dm)} diabetes, ${C(al, f.smoke)} fumam, ${C(al, f.fam)} têm infarto ou AVC na família, ${C(al, f.a60)} têm 60 anos ou mais e ${C(al, f.cvd)} já têm doença do coração. ${top} tem(têm) 2 ou mais desses fatores: prioridade máxima.`,
+        `Contato pelo WhatsApp autorizado: ${wc} de ${al.length}. Quem não autorizou só pode ser abordado em novo encontro presencial.`],
+      steps: [
+        `Montar a fila de contato: primeiro alerta com 2 ou mais fatores de risco (${top}), depois os demais alertas. Contatar apenas quem autorizou (${wc}).`,
+        'No contato, perguntar pelos sintomas de agora. Dor ou aperto no peito em repouso ou que não passa em poucos minutos, desmaio recente, falta de ar intensa, suor frio: orientar ligar 192 (SAMU) e não ir por conta própria.',
+        'Sintomas ao esforço sem sinais de gravidade: marcar consulta médica com eletrocardiograma de repouso de 12 derivações na primeira avaliação. Dor aos esforços sugere angina e deve ser tratada como assunto médico, não comercial.',
+        'Conduzir conforme o sintoma: falta de ar, ECG, peptídeo natriurético e ecocardiograma (insuficiência cardíaca); desmaio, história, pressão deitado e em pé e ECG (síncope); palpitações, ECG para documentar o ritmo (fibrilação atrial).',
+        'Registrar o contato e o desfecho (consulta marcada, procurou pronto-atendimento, sem resposta). Sem resposta, tentar de novo em 48 horas por outro canal e anotar. Refazer a triagem após a avaliação médica.',
+        'Não oferecer plano, pacote ou exame de rotina antes da avaliação médica (regra já adotada pelo app).'],
+      refs: ['CP21', 'CCS24', 'HF21', 'SYNC18', 'AF24'] });
+  }
+
+  // 2) Pressão alta
+  const hUn = recs.filter(r => A(r).D2 === 2), hKn = recs.filter(r => A(r).D2 === 3);
+  if (hUn.length + hKn.length) {
+    push({ id: 'pa', n: hUn.length + hKn.length,
+      headline: `Confirmar a pressão arterial de ${hUn.length + hKn.length} pessoas (${hUn.length} com pressão alta descontrolada ou sem controle conhecido, ${hKn.length} que não medem há mais de 1 ano)`,
+      data: [
+        `${P(hUn.length)} informaram pressão alta com última medida alta ou desconhecida; ${P(hKn.length)} não sabem ou não medem há mais de 1 ano.`,
+        `Cruzamento: entre os que têm pressão alta descontrolada, ${C(hUn, r => A(r).D6 === 1)} não tomam remédio todo dia e ${C(hUn, f.dm)} também têm diabetes; entre os que não medem, ${C(hKn, f.a50)} têm 50 anos ou mais e ${C(hKn, isAlertRec)} têm sinal de alerta.`],
+      steps: [
+        'Medir a pressão com aparelho validado, manguito do tamanho do braço, pessoa sentada e em repouso por 5 minutos, com 2 medidas; registrar os valores.',
+        'Sem diagnóstico prévio, confirmar a hipertensão com medidas fora do consultório (MRPA ou MAPA) antes de rotular a pessoa, quando possível.',
+        'Com diagnóstico e pressão alta, encaminhar à consulta médica para revisar o tratamento e checar a adesão ao remédio (cruzamento acima: quem não toma remédio todo dia vem primeiro).',
+        'Exames de rotina da avaliação inicial: ECG, creatinina, potássio, ácido úrico, perfil lipídico e glicemia (sugeridos pelo app na tela de resultado).',
+        'Orientar sal, peso, atividade física e álcool, e marcar nova medida de controle com data definida pelo médico.'],
+      refs: ['HAS20', 'HAS24'] });
+  }
+
+  // 3) Açúcar no sangue
+  const gUn = recs.filter(r => A(r).D3 === 3), gHi = recs.filter(r => A(r).D3 === 1);
+  if (gUn.length + gHi.length) {
+    push({ id: 'dm', n: gUn.length + gHi.length,
+      headline: `Rastrear glicose em ${gUn.length + gHi.length} pessoas (${gUn.length} nunca mediram ou não sabem, ${gHi.length} com açúcar alto sem diabetes)`,
+      data: [
+        `${P(gUn.length)} nunca mediram o açúcar ou não sabem; ${P(gHi.length)} já ouviram que o açúcar estava alto.`,
+        `Cruzamento: entre os que nunca mediram, ${C(gUn, f.a40)} têm 40 anos ou mais (faixa de rastreamento), ${C(gUn, f.over)} têm sobrepeso ou obesidade e ${C(gUn, f.has)} têm pressão alta; entre os com açúcar alto, ${C(gHi, f.over)} têm sobrepeso ou obesidade.`],
+      steps: [
+        'Coletar glicemia de jejum (jejum de 8 horas) e hemoglobina glicada de quem tem 35 anos ou mais, ou sobrepeso com outro fator de risco; priorizar o grupo do cruzamento acima.',
+        'Interpretar: glicemia de jejum de 100 a 125 mg/dL ou HbA1c de 5,7 a 6,4% indicam pré-diabetes; 126 mg/dL ou mais, ou HbA1c de 6,5% ou mais, indicam diabetes, com confirmação em nova amostra se não houver sintomas.',
+        'Pré-diabetes: orientar mudança de estilo de vida (alimentação, peso, atividade física) e repetir o exame em intervalo definido pelo médico.',
+        'Diabetes confirmado: consulta médica para plano de tratamento, com avaliação de função renal, perfil lipídico e risco cardiovascular.'],
+      refs: ['ADA2', 'ADA10'] });
+  }
+
+  // 4) Colesterol
+  const cUn = recs.filter(r => A(r).D4 === 3), cHi = recs.filter(r => A(r).D4 === 2);
+  if (cUn.length + cHi.length) {
+    push({ id: 'col', n: cUn.length + cHi.length,
+      headline: `Medir ou tratar o colesterol de ${cUn.length + cHi.length} pessoas (${cUn.length} nunca mediram, ${cHi.length} com colesterol alto sem remédio)`,
+      data: [
+        `${P(cUn.length)} nunca mediram o colesterol ou não sabem; ${P(cHi.length)} têm colesterol alto e não tomam remédio.`,
+        `Cruzamento: entre os que nunca mediram, ${C(cUn, f.has)} têm pressão alta, ${C(cUn, f.smoke)} fumam, ${C(cUn, f.fam)} têm infarto ou AVC na família e ${C(cUn, f.dm)} têm diabetes; entre os com colesterol alto sem remédio, ${C(cHi, f.has)} têm pressão alta e ${C(cHi, f.smoke)} fumam.`],
+      steps: [
+        'Coletar perfil lipídico (colesterol total, HDL, LDL e triglicerídeos), começando por quem acumula fatores de risco no cruzamento acima.',
+        'Colesterol alto sem tratamento: consulta médica para estimar o risco cardiovascular total e definir a meta de LDL-c e a necessidade de medicamento; a decisão de tratar é do médico.',
+        'Considerar apolipoproteína B e dosar a lipoproteína(a) uma vez na vida, em especial com história familiar de doença cardiovascular precoce (opcionais no app).',
+        'Orientar alimentação, atividade física e parada do fumo, e repetir o perfil lipídico no intervalo definido pelo médico.'],
+      refs: ['DIS25', 'PREV21', 'DYSL19', 'LPA22'] });
+  }
+
+  // 5) Tabagismo
+  const sm = recs.filter(f.smoke);
+  push({ id: 'fumo', n: sm.length,
+    headline: `Oferecer apoio para parar de fumar a ${sm.length} pessoas`,
+    data: [
+      `${P(sm.length)} fumam atualmente ou pararam há menos de 1 ano.`,
+      `Cruzamento: entre os fumantes, ${C(sm, f.has)} têm pressão alta, ${C(sm, f.colh)} têm colesterol alto, ${C(sm, f.dm)} têm diabetes, ${C(sm, f.fam)} têm infarto ou AVC na família e ${C(sm, isAlertRec)} têm sinal de alerta: o fumo soma risco a esses fatores.`],
+    steps: [
+      'Perguntar e registrar o uso (cigarros por dia, há quanto tempo, tentativas anteriores).',
+      'Aconselhar parar de forma clara e personalizada, ligando ao risco que a própria pessoa tem (por exemplo, fuma e tem pressão alta).',
+      'Avaliar a disposição: pretende parar nos próximos 30 dias? Quem está pronto recebe plano de data; quem não está recebe nova conversa no próximo contato.',
+      'Oferecer apoio combinado: aconselhamento comportamental mais medicamento aprovado (reposição de nicotina, bupropiona ou vareniclina), sempre por prescrição médica.',
+      'Acompanhar com contato de retorno e indicar o Programa Nacional de Controle do Tabagismo do SUS e o Disque Saúde 136.'],
+    refs: ['TOB21'] });
+
+  // 6) Histórico familiar
+  const fm = recs.filter(f.fam);
+  push({ id: 'fam', n: fm.length,
+    headline: `Oferecer check-up do coração a ${fm.length} pessoas com infarto ou AVC na família`,
+    data: [
+      `${P(fm.length)} têm pai, mãe ou familiar com infarto ou AVC.`,
+      `Cruzamento: entre eles, ${C(fm, f.a40)} têm 40 anos ou mais, ${C(fm, r => A(r).D4 === 3)} nunca mediram o colesterol e ${C(fm, r => A(r).D3 === 3)} nunca mediram o açúcar.`],
+    steps: [
+      'Perguntar quem teve o evento e com que idade: infarto ou AVC antes dos 55 anos em homem ou dos 65 em mulher da família indica história familiar precoce.',
+      'Coletar perfil lipídico e glicemia, e medir a pressão arterial; priorizar quem nunca mediu (cruzamento acima).',
+      'Considerar dosar a lipoproteína(a) uma vez na vida e avaliar hipercolesterolemia familiar se o colesterol for muito alto.',
+      'Incluir parentes de primeiro grau na orientação de prevenção, com consulta médica para estimar o risco total.'],
+    refs: ['PREV21', 'LPA22', 'DYSL19'] });
+
+  // 7) Fígado
+  const fg = recs.filter(r => A(r).D7n === 0);
+  push({ id: 'figado', n: fg.length,
+    headline: `Avaliar o fígado de ${fg.length} pessoas que já ouviram que têm gordura no fígado`,
+    data: [
+      `${P(fg.length)} informaram gordura no fígado.`,
+      `Cruzamento: entre elas, ${C(fg, f.dm)} têm diabetes, ${C(fg, f.over)} têm sobrepeso ou obesidade, ${C(fg, r => A(r).H4 === 1)} bebem mais de 2 vezes por semana e ${C(fg, f.has)} têm pressão alta.`],
+    steps: [
+      'Coletar TGO e TGP e hemograma (plaquetas) para calcular o índice FIB-4 (idade, TGO, TGP e plaquetas).',
+      'FIB-4 baixo: reavaliar em intervalo definido pelo médico; FIB-4 indeterminado ou alto: encaminhar para elastografia hepática e hepatologista.',
+      'Orientar redução de peso, alimentação, atividade física e redução do álcool, e controlar diabetes, pressão e colesterol, porque a doença hepática metabólica se associa a maior risco cardiovascular.'],
+    refs: ['MASLD24'] });
+
+  // 8) Emocional
+  const em = recs.filter(r => A(r).D10n === 2);
+  push({ id: 'emocional', n: em.length,
+    headline: `Fazer triagem de humor em ${em.length} pessoas que relataram emocional ruim`,
+    data: [
+      `${P(em.length)} responderam que o emocional tem estado ruim.`,
+      `Cruzamento: entre elas, ${C(em, f.has)} têm pressão alta, ${C(em, f.dm)} têm diabetes, ${C(em, f.cvd)} já têm doença do coração e ${C(em, isAlertRec)} têm sinal de alerta.`],
+    steps: [
+      'Aplicar o PHQ-2 (duas perguntas sobre humor deprimido e perda de interesse nas últimas 2 semanas); pontuação 3 ou mais é positiva e pede avaliação.',
+      'PHQ-2 positivo: aplicar o PHQ-9 e marcar consulta médica ou psicológica; depressão associa-se a pior evolução de doenças do coração.',
+      'Se houver pensamentos de morrer ou de se ferir, orientar ajuda imediata: CVV 188 (24 horas) ou SAMU 192, e não deixar a pessoa sozinha.',
+      'Encaminhar à unidade de saúde ou ao CAPS da região e registrar o retorno combinado.'],
+    refs: ['PHQ03', 'DEP23'] });
+
+  // 9) Atividade física
+  const sd = recs.filter(r => A(r).H2 === 2);
+  push({ id: 'atividade', n: sd.length,
+    headline: `Orientar atividade física para ${sd.length} pessoas sedentárias`,
+    data: [
+      `${P(sd.length)} não fazem caminhada ou exercício 3 vezes por semana.`,
+      `Cruzamento: entre os sedentários, ${C(sd, f.over)} têm sobrepeso ou obesidade, ${C(sd, f.has)} têm pressão alta, ${C(sd, f.dm)} têm diabetes e ${C(sd, r => A(r).A1 === 0)} têm dor ou aperto no peito ao esforço.`],
+    steps: [
+      'Quem tem dor no peito ao esforço, falta de ar ou desmaio deve passar por avaliação médica antes de aumentar a atividade (cruzamento acima).',
+      'Para os demais, meta de 150 a 300 minutos por semana de atividade moderada (como caminhada rápida), com exercícios de fortalecimento muscular em 2 ou mais dias, começando devagar e aumentando aos poucos.',
+      'Orientar reduzir o tempo sentado ao longo do dia; qualquer atividade é melhor que nenhuma.',
+      'Combinar uma meta pequena e semanal e perguntar sobre ela no próximo contato.'],
+    refs: ['PA20'] });
+
+  // 10) Peso e altura
+  const nb = recs.filter(r => r.bmiCat === 'ns' || r.bmiCat === null || r.bmiCat === undefined);
+  push({ id: 'imc', n: nb.length,
+    headline: `Atualizar peso e altura de ${nb.length} pessoas`,
+    data: [
+      `${P(nb.length)} estão sem peso ou altura válidos; sem esses dados o sobrepeso e a obesidade não entram na pontuação.`,
+      `Cruzamento: entre elas, ${C(nb, f.a50)} têm 50 anos ou mais, ${C(nb, f.has)} têm pressão alta e ${C(nb, f.dm)} têm diabetes, grupos em que o peso mais pesa na decisão clínica.`],
+    steps: [
+      'Medir peso (balança calibrada, sem calçados) e altura (fita fixa na parede) no próximo contato ou na coleta, e registrar no app.',
+      'Calcular o IMC e classificar: abaixo de 18,5 baixo peso; 18,5 a 24,9 adequado; 25 a 29,9 sobrepeso; 30 ou mais obesidade.',
+      'Começar por quem tem pressão alta ou diabetes (cruzamento acima) e usar "Revisar e recalcular" para atualizar a classificação.',
+      'Quem passar para sobrepeso ou obesidade recebe orientação de alimentação e atividade física (ações acima).'],
+    refs: ['WHO00', 'PREV21'] });
+
+  return out;
+}
+function actionRefKeys(list) { const k = []; list.forEach(a => a.refs.forEach(r => { if (!k.includes(r)) k.push(r); })); return k; }
+function actionsHTML(recs) {
+  const list = actionsModel(recs), keys = actionRefKeys(list);
+  const body = list.length ? list.map((a, i) => `<details class="ac"${i < 2 ? ' open' : ''}><summary><span class="ac-n">${i + 1}</span><span>${escapeHtml(a.headline)}</span></summary>
+      <div class="ac-body"><h4>O que os dados mostram</h4><ul>${a.data.map(t => `<li>${escapeHtml(t)}</li>`).join('')}</ul>
+      <h4>Passo a passo</h4><ol>${a.steps.map(t => `<li>${escapeHtml(t)}</li>`).join('')}</ol>
+      <p class="ac-ref"><strong>Base:</strong> ${a.refs.map(r => '[' + (keys.indexOf(r) + 1) + ']').join(' ')}</p></div></details>`).join('')
+    : '<div class="adm-empty">Sem dados para gerar ações no filtro atual.</div>';
+  return `<section class="adm-card" id="acoesRec"><div class="dc-head"><h3>Próximas ações e recomendações</h3><button class="dc-pdf" type="button" data-pdf="actions">📄 PDF</button></div>
+    <p class="adm-sub">Cada ação cruza os totais do painel com as respostas informadas pelas pessoas do filtro atual, com passo a passo e base bibliográfica. São orientações operacionais para a equipe e não substituem a conduta do médico responsável.</p>
+    ${body}
+    ${keys.length ? `<div class="ex-refs"><strong>Referências</strong><ol>${keys.map(k => `<li>${escapeHtml(EX_REFS[k])}</li>`).join('')}</ol></div>` : ''}
+    <div class="dc-msg"></div></section>`;
+}
+function overviewHTML(recs) {
+  const d = ovData(recs), N = d.N;
+  const meta = dashMetaRows(N);
+  const personSvg = off => `<svg class="${off ? 'off' : ''}" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7.5" r="4"/><path d="M3.5 21c0-4.6 3.8-7.3 8.5-7.3s8.5 2.7 8.5 7.3z"/></svg>`;
+  const incPct = N ? d.noBmi / N : 0, offN = Math.round(incPct * 30);
+  const people = Array.from({ length: 30 }, (_, i) => personSvg(i >= 30 - offN)).join('');
+  const max = Math.max(d.N, 1);
+  const fun = [['Triados', d.N, '#0B2A5B'], ['Com alerta', d.alerts, '#1F4A94'], ['Contato autorizado', d.contact, '#3B6FC0'], ['Pedido liberado', d.released, '#5C90DA']];
+  const sig = d.signs.map(([l, n]) => {
+    const w = N ? n / N * 100 : 0;
+    return `<div class="ov-sig"><div class="l">${escapeHtml(l)}</div><div class="dl-track"><div class="dl-fill" style="width:${w}%;${n ? 'min-width:4px;' : ''}background:linear-gradient(#34589F,#27478A)"></div><span class="dl-val${w >= 72 ? ' in' : ''}" style="${w >= 72 ? '' : 'left:calc(' + w + '% + 10px)'}">${n} de ${N} (${fmtPct(n, N)})</span></div></div>`;
+  }).join('');
+  return `<section class="ov">
+    <div class="ov-head"><div><div class="ov-brand">MAVI+</div><div class="ov-sub">Painel de triagem e inteligência de saúde</div></div>
+      <div class="ov-chips"><div class="ov-chip">Período<b>${escapeHtml(meta[0][1])}</b></div><div class="ov-chip">Localidade<b>${escapeHtml(meta[1][1])}</b></div><div class="ov-chip">Faixa etária<b>${escapeHtml(meta[2][1])}</b></div></div></div>
+    <div class="ov-grid">
+      <div class="ov-col">
+        <div class="ov-card ov-kpi"><div class="t">Pessoas avaliadas</div><div class="v">${fmtInt(N)}</div><div class="f">Na amostra atual</div></div>
+        <div class="ov-card ov-kpi"><div class="t">Sem peso/altura</div><div class="v">${d.noBmi} (${fmtPct(d.noBmi, N)})</div><div class="f">Necessitam de atualização</div></div>
+        <div class="ov-card ov-kpi red"><div class="t">Alertas clínicos</div><div class="v">${d.alerts} (${fmtPct(d.alerts, N)})</div><div class="f">Encaminhamento prioritário</div></div>
+      </div>
+      <div class="ov-card"><h3>Sinais clínicos e alertas</h3>${sig}
+        <div class="ov-note">*Atenção: os sinais podem se sobrepor; a base de cálculo é de ${N} indivíduo${N === 1 ? '' : 's'}.</div>
+        <div class="ov-pdfrow"><button class="dc-pdf" type="button" data-pdf="chart" data-ch="Sinais de alerta">📄 PDF</button></div></div>
+      <div class="ov-card"><h3>Oportunidades e fluxo operacional</h3>
+        <div class="ov-h4">Funil de acompanhamento</div>
+        <div class="ov-funnel">${fun.map(([l, n, c], i) => `<div style="width:${100 - i * 14}%;background:${c}">${l} (${n})</div>`).join('')}</div>
+        <div class="ov-h4">Qualidade dos dados</div>
+        <div class="ov-q"><div class="ov-people">${people}</div><div class="txt">${fmtPct(d.noBmi, N)} dos perfis incompletos (peso/altura)</div></div>
+        <div class="ov-pdfrow"><button class="dc-pdf" type="button" data-pdf="overview">📄 PDF</button></div></div>
+    </div>
+    <div class="dc-msg" id="ovMsg"></div>
+  </section>`;
+}
+function dashCard(ch) {
+  return `<section class="adm-card"><div class="dc-head"><h3>${ch.title}</h3><button class="dc-pdf" type="button" data-pdf="chart" data-ch="${escapeHtml(ch.title)}">📄 PDF</button></div>${ch.sub ? `<p class="adm-sub">${ch.sub}</p>` : ''}${dashListHTML(ch)}<div class="dc-msg"></div></section>`;
+}
+function buildItemPDF(kind, ch, recs, model) {
+  const { dateStr, timeStr } = pdfMeta();
+  const pdf = newMaviPdf(), flow = new PdfFlow(pdf);
+  const title = kind === 'actions' ? 'Próximas ações e recomendações' : kind === 'overview' ? 'Visão geral da triagem' : ch.title;
+  pdfHeader(pdf, flow, title.length > 44 ? title.slice(0, 43) + '…' : title, dateStr, timeStr);
+  pdfMetaBox(pdf, flow, dashMetaRows(recs.length));
+  if (kind === 'chart') {
+    const c2 = dashPdfChart(ch);
+    if (c2) pdfBarChart(pdf, flow, c2); else flow.para('Nenhum item marcado nesta lista.', { size: 10 });
+    pdfDisclaimer(pdf, flow, 'Relatório agregado, sem identificação de participantes. São respostas autorreferidas e o resultado de uma triagem, não são diagnósticos.');
+  } else if (kind === 'overview') {
+    const d = ovData(recs);
+    pdfMetaBox(pdf, flow, [['Pessoas avaliadas', String(d.N)], ['Sem peso/altura', `${d.noBmi} (${fmtPct(d.noBmi, d.N)}) necessitam de atualização`], ['Alertas clínicos', `${d.alerts} (${fmtPct(d.alerts, d.N)}) encaminhamento prioritário`]]);
+    pdfBarChart(pdf, flow, { title: 'Sinais clínicos e alertas', sub: `Os sinais podem se sobrepor; base de ${d.N}.`, base: d.N, items: d.signs.map(([label, n]) => ({ label, n })) });
+    pdfBarChart(pdf, flow, { title: 'Funil de acompanhamento', sub: `Base: ${d.N} triados.`, base: d.N, items: [{ label: 'Triados', n: d.N }, { label: 'Com alerta', n: d.alerts }, { label: 'Contato autorizado', n: d.contact }, { label: 'Pedido liberado', n: d.released }] });
+    pdfBarChart(pdf, flow, { title: 'Qualidade dos dados', sub: 'Perfis com peso e altura válidos.', base: d.N, items: [{ label: 'Perfis completos', n: d.N - d.noBmi }, { label: 'Perfis incompletos (peso/altura)', n: d.noBmi }] });
+    pdfDisclaimer(pdf, flow, 'Relatório agregado, sem identificação de participantes. São respostas autorreferidas e o resultado de uma triagem, não são diagnósticos.');
+  } else {
+    const list = actionsModel(recs), keys = actionRefKeys(list);
+    if (!list.length) flow.para('Sem dados para gerar ações no filtro atual.', { size: 10 });
+    list.forEach((a, i) => {
+      pdfSection(pdf, flow, `Ação ${i + 1}`);
+      flow.para(a.headline, { font: 'F2', size: 10.5, lh: 1.35 }); flow.gap(4);
+      flow.para('O que os dados mostram', { font: 'F2', size: 9.5, color: PDF_C.green }); flow.gap(2);
+      a.data.forEach(t => { flow.para('• ' + t, { size: 9.3, lh: 1.4, indent: 6 }); flow.gap(2); });
+      flow.gap(2);
+      flow.para('Passo a passo', { font: 'F2', size: 9.5, color: PDF_C.green }); flow.gap(2);
+      a.steps.forEach((t, j) => { flow.para((j + 1) + '. ' + t, { size: 9.3, lh: 1.4, indent: 6 }); flow.gap(2); });
+      flow.para('Base: ' + a.refs.map(r => '[' + (keys.indexOf(r) + 1) + ']').join(' '), { size: 8.5, color: PDF_C.gray });
+      flow.gap(4);
+    });
+    if (keys.length) {
+      pdfSection(pdf, flow, 'Referências');
+      keys.forEach((k, i) => { flow.para((i + 1) + '. ' + EX_REFS[k], { size: 8, color: PDF_C.gray, lh: 1.35 }); flow.gap(2); });
+    }
+    pdfDisclaimer(pdf, flow, 'Orientações operacionais para a equipe, baseadas nas referências citadas e cruzadas com as respostas informadas. Não substituem a avaliação e a conduta do médico responsável.');
+  }
+  pdfFooters(pdf, `MAVI Assistência à Saúde — ${title}. Gerado em ${dateStr} às ${timeStr}.`);
+  return pdf.output();
+}
+function bindItemPdfs(model, recs) {
+  adminArea.querySelectorAll('[data-pdf]').forEach(b => b.addEventListener('click', async () => {
+    const kind = b.dataset.pdf;
+    const ch = kind === 'chart' ? model.charts.find(c => c.title === b.dataset.ch) : null;
+    const card = b.closest('section');
+    const msg = card ? card.querySelector('.dc-msg') : null;
+    const say = t => { if (msg) msg.textContent = t; };
+    if (kind === 'chart' && !ch) return;
+    const slug = (kind === 'chart' ? ch.title : kind === 'actions' ? 'proximas_acoes' : 'visao_geral').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^A-Za-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 40);
+    const y = new Date(), stamp = `${y.getFullYear()}-${String(y.getMonth() + 1).padStart(2, '0')}-${String(y.getDate()).padStart(2, '0')}`;
+    let bytes;
+    try { bytes = buildItemPDF(kind, ch, recs, model); } catch (e) { say('Não foi possível gerar o PDF.'); return; }
+    bumpAdminIdle();
+    try { await deliverPdf(bytes, `MAVI_${slug}_${stamp}.pdf`); say('PDF pronto.'); }
+    catch (e) { say(e && e.code === 'declined' ? 'Salvamento cancelado.' : 'Não foi possível salvar o PDF.'); }
+  }));
+}
+
 // ---------- Listas do painel: ocultar zerados, ordenar, selecionar, fixar, mover e arrastar ----------
 const DASH_KEY = 'mavi_dash_lists_v1';
 const DASH_DEFAULT = () => ({ hideZero: false, sort: 'manual', unchecked: {}, hidden: {}, pinned: {}, order: {} });
@@ -4560,14 +4918,14 @@ function dashListHTML(ch) {
   const hiddenN = ch.items.filter(it => dashPrefs.hidden[dkey(ch, it)]).length;
   const rows = shown.map(it => {
     const key = dkey(ch, it), w = Math.min(100, it.n / ch.base * 100), zero = it.n === 0;
-    const color = it.color || it.css || 'var(--viz-1)';
+    const color = it.color || it.css || 'linear-gradient(#34589F,#27478A)';
     const attrs = `data-ch="${escapeHtml(ch.title)}" data-label="${escapeHtml(it.label)}"`;
     return `<div class="dl-row${zero ? ' dl-zero' : ''}" ${attrs}>
       <span class="dl-handle" title="Arraste para reordenar" aria-label="Arrastar para reordenar">⠿</span>
       <input type="checkbox" class="dl-chk" ${attrs} ${dashPrefs.unchecked[key] ? '' : 'checked'} aria-label="Incluir ${escapeHtml(it.label)} no gráfico e no relatório">
       <div class="dl-main" title="${escapeHtml(it.label)}: ${it.n} (${fmtPct(it.n, ch.base)})">
-        <div class="hb-label"><span class="hb-key">${ch.dots ? `<span class="hb-dot" style="background:${color}"></span>` : ''}${escapeHtml(it.label)}</span><span class="hb-val">${fmtPct(it.n, ch.base)} · ${fmtInt(it.n)}</span></div>
-        <div class="hb-track"><div class="hb-fill" style="width:${w}%;${zero ? '' : 'min-width:3px;'}background:${zero ? 'transparent' : color}"></div></div>
+        <div class="hb-label"><span class="hb-key">${ch.dots ? `<span class="hb-dot" style="background:${color}"></span>` : ''}${escapeHtml(it.label)}</span></div>
+        <div class="dl-track"><div class="dl-fill" style="width:${w}%;${zero ? '' : 'min-width:4px;'}background:${zero ? 'transparent' : color}"></div><span class="dl-val${w >= 72 ? ' in' : ''}" style="${w >= 72 ? '' : 'left:calc(' + w + '% + 10px)'}">${fmtInt(it.n)} de ${fmtInt(ch.base)} (${fmtPct(it.n, ch.base)})</span></div>
       </div>
       <div class="dl-act">
         <button type="button" class="${dashPrefs.pinned[key] ? 'on' : ''}" data-dl="pin" ${attrs} title="Fixar no topo" aria-label="Fixar no topo">📌</button>
@@ -4691,7 +5049,7 @@ function renderDashboard() {
     </div>`;
 
   const kpis = `<div class="kpi-grid">${model.kpis.map(([l, v, f]) => `<div class="kpi"><div class="k-label">${l}</div><div class="k-value">${v}</div><div class="k-foot">${f}</div></div>`).join('')}</div>`;
-  const chartCards = model.charts.slice(1).map(ch => admCard(ch.title, ch.sub, dashListHTML(ch))).join('');
+  const chartCards = model.charts.slice(1).map(ch => dashCard(ch)).join('');
 
   const notes = [];
   if (typeof adminSenders === 'number' && adminSenders) notes.push(`Recebidos de ${adminSenders} pessoa(s) que preencheram (captadores e você).`);
@@ -4701,6 +5059,8 @@ function renderDashboard() {
     <h2 class="pnl-title">Painel de Análises e Triagem</h2>
     <p class="pnl-sub">${fmtInt(total)} questionário${total === 1 ? '' : 's'} no filtro atual.</p>
     ${filters}
+    ${overviewHTML(recs)}
+    ${actionsHTML(recs)}
     ${visualPanelHTML(recs)}
     ${kanbanHTML(recs)}
     ${flowHTML(recs)}
@@ -4752,6 +5112,7 @@ function renderDashboard() {
   if (ctMore) ctMore.addEventListener('click', () => { adminContactFilters.limit += 30; rerender(); });
   bindRecoveryCard();
   bindDashLists(model, rerender);
+  bindItemPdfs(model, recs);
   adminArea.querySelectorAll('[data-fase]').forEach(sel => sel.addEventListener('change', () => {
     const m = faseRead(); m[sel.getAttribute('data-fase')] = sel.value; faseWrite(m); rerender();
   }));
