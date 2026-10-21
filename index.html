@@ -659,6 +659,21 @@
   .hb-track { height: 14px; background: var(--viz-track); border-radius: 0 4px 4px 0; }
   .hb-fill { height: 100%; border-radius: 0 4px 4px 0; }
   .dl-toolbar { position: sticky; top: 0; z-index: 5; }
+  .rk-card { background: #fff; border: 1px solid #DDE6F0; border-radius: 20px; padding: 16px; margin: 14px 0; box-shadow: 0 4px 16px rgba(11,58,107,.07); }
+  .rk-card h3 { margin: 0 0 4px; font-size: 17px; color: #0B1B2E; }
+  .rk-big { font-size: 44px; font-weight: 800; color: #0B2A5B; line-height: 1.1; }
+  .rk-sub { font-size: 13.5px; color: #33475E; margin: 2px 0 10px; }
+  .rk-ref { font-size: 13px; background: #EEF4FB; border-radius: 12px; padding: 8px 12px; margin-bottom: 10px; color: #1B2B40; }
+  .rk-row { display: flex; justify-content: space-between; gap: 10px; padding: 9px 0; border-top: 1px solid #E5EBF2; font-size: 13.5px; }
+  .rk-row .a { color: #10243C; }
+  .rk-row .a small { display: block; color: #55657A; font-size: 12px; margin-top: 2px; }
+  .rk-row .v { font-weight: 800; white-space: nowrap; color: #C0262D; }
+  .rk-row .v.n { color: #55657A; font-weight: 600; }
+  .rk-note { font-size: 12px; color: #55657A; margin-top: 10px; line-height: 1.45; }
+  .pdf-sel label { display: flex; gap: 10px; align-items: center; padding: 8px 0; font-size: 15px; cursor: pointer; }
+  .pdf-sel input[type=checkbox] { width: 20px; height: 20px; flex: none; }
+  .pdf-sel .row2 { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+  .pdf-sel .row2 button { flex: 1 1 150px; }
   .dc-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
   .dc-pdf { border: 1.5px solid #1A4F8F; background: #fff; color: #0B3A6B; border-radius: 999px; font-size: 12px; font-weight: 700; padding: 6px 12px; cursor: pointer; white-space: nowrap; flex: none; font-family: inherit; }
   .dc-pdf:hover { background: #E3EEF9; }
@@ -1449,7 +1464,7 @@ function pdfExams(pdf, flow) {
   const all = examSuggestions();
   const list = examIncluded(all);
   const keys = examRefKeys(all);
-  pdfSection(pdf, flow, 'Exames e eletrocardiograma sugeridos');
+  pdfSection(pdf, flow, 'Etapa 3 — Exames e eletrocardiograma sugeridos');
   flow.para('Sugestão para avaliação médica, conforme as respostas. Não é pedido de exames nem diagnóstico.', { size: 9, color: PDF_C.gray, lh: 1.4 });
   flow.gap(4);
   if (!list.length) { flow.para('Nenhum exame sugerido pelas respostas.', { size: 9.5, lh: 1.4 }); flow.gap(4); }
@@ -1780,12 +1795,15 @@ function showResult(total) {
       <div class="refcode">Código de referência: ${refCode}</div>
     </div>
     <div id="sendStatus" class="send-status"></div>
+    ${riskPctHTML()}
+    ${preventionHTML()}
     ${nextStepsHTML(ns)}
     ${examsHTML()}
     <div class="disclaimer">
       Ferramenta de triagem baseada em fatores de risco reconhecidos. Não substitui avaliação médica, diagnóstico ou exames.
     </div>
     <div class="result-actions">
+      ${pdfSelectionHTML()}
       <button class="pdf-btn" id="genRiskPdfBtn">📄 PDF — Triagem de saúde</button>
       <div id="riskPdfArea"></div>
       <button class="pdf-btn crm" id="genCrmPdfBtn">🗂️ PDF — Ficha de relacionamento</button>
@@ -1822,6 +1840,7 @@ function showResult(total) {
   `;
   resultDiv.querySelectorAll('.ex-chk').forEach(c => c.addEventListener('change', () => { if (c.checked) delete EXAM_OFF[c.dataset.id]; else EXAM_OFF[c.dataset.id] = true; const t = document.getElementById('exTotal'); if (t) t.innerHTML = examTotalLines(examIncluded(examSuggestions())).map(escapeHtml).join('<br>'); }));
   document.getElementById('genRiskPdfBtn').addEventListener('click', generateRiskPDF);
+  bindPdfSelection();
   document.getElementById('coordPdfBtn').addEventListener('click', () => generateDocument('risk', 'coordPdfArea'));
   document.getElementById('coordWaLink').href = waLink(COORD_WA, `Triagem MAVI — PDF em anexo. Código: ${refCode}`);
   document.getElementById('genCrmPdfBtn').addEventListener('click', generateCrmPDF);
@@ -2016,7 +2035,7 @@ function scoreLine() {
   if (!resultComputed) return '';
   return resultComputed.alert ? `Sinal de alerta — ${resultComputed.label}` : `${resultComputed.total} pontos de atenção (de ${MAX_SCORE}) — ${resultComputed.label}`;
 }
-const RISK_DISCLAIMER = 'Esta é uma ferramenta de triagem e conscientização: não substitui avaliação médica, diagnóstico clínico ou exames. A pontuação soma pontos de atenção reconhecidos na literatura cardiovascular e não é um cálculo de probabilidade. Recomenda-se consulta médica para avaliação completa.';
+const RISK_DISCLAIMER = 'Esta é uma ferramenta de triagem e conscientização: não substitui avaliação médica, diagnóstico clínico ou exames. A pontuação soma pontos de atenção reconhecidos na literatura cardiovascular; a porcentagem de risco é uma estimativa educativa a partir das respostas e não é diagnóstico. Recomenda-se consulta médica para avaliação completa.';
 const CRM_DISCLAIMER = 'Estas informações têm finalidade de relacionamento e de identificação de interesse em serviços da MAVI; não constituem prontuário médico, diagnóstico ou orientação médica, nem recomendação de realizar exames sem indicação profissional. As respostas sobre saúde são confidenciais. A MAVI oferece cartão de descontos, que não é plano de saúde. Contato comercial apenas com autorização do participante.';
 
 // --- Documento 1: Triagem de saúde (clínico — sem telefone/município) ---
@@ -2435,16 +2454,239 @@ function pdfPayloadMeta() {
   } catch (e) { return null; }
 }
 
+Object.assign(EX_REFS, {
+  PCE13: 'Goff DC Jr, et al. 2013 ACC/AHA Guideline on the Assessment of Cardiovascular Risk (Pooled Cohort Equations). J Am Coll Cardiol. 2014;63(25 Pt B):2935-2959. doi:10.1016/j.jacc.2013.11.005 (PMID 24239921)',
+  IH04: 'Yusuf S, et al. Effect of potentially modifiable risk factors associated with myocardial infarction in 52 countries (INTERHEART). Lancet. 2004;364(9438):937-952. doi:10.1016/S0140-6736(04)17018-9 (PMID 15364185)',
+  FAM04: 'Lloyd-Jones DM, et al. Parental cardiovascular disease as a risk factor for cardiovascular disease in middle-aged adults. JAMA. 2004;291(18):2204-2211. doi:10.1001/jama.291.18.2204 (PMID 15138242)',
+  DEP06: 'Nicholson A, Kuper H, Hemingway H. Depression as an aetiologic and prognostic factor in coronary heart disease: meta-analysis of 54 observational studies. Eur Heart J. 2006;27(23):2763-2774. doi:10.1093/eurheartj/ehl338 (PMID 17082208)',
+  CKD04: 'Go AS, et al. Chronic kidney disease and the risks of death, cardiovascular events, and hospitalization. N Engl J Med. 2004;351(13):1296-1305. doi:10.1056/NEJMoa041031 (PMID 15385656)',
+  BMI11: 'Emerging Risk Factors Collaboration (Wormser D, et al.). Separate and combined associations of body-mass index and abdominal adiposity with cardiovascular disease. Lancet. 2011;377(9771):1085-1095. doi:10.1016/S0140-6736(11)60105-0 (PMID 21397319)',
+  BP16: 'Ettehad D, et al. Blood pressure lowering for prevention of cardiovascular disease and death: a systematic review and meta-analysis. Lancet. 2016;387(10022):957-967. doi:10.1016/S0140-6736(15)01225-8 (PMID 26724178)',
+  CTT10: 'Cholesterol Treatment Trialists (CTT) Collaborators (Baigent C, et al.). Efficacy and safety of more intensive lowering of LDL cholesterol: a meta-analysis of 26 randomised trials. Lancet. 2010;376(9753):1670-1681. doi:10.1016/S0140-6736(10)61350-5 (PMID 21067804)',
+  SM03: 'Critchley JA, Capewell S. Mortality risk reduction associated with smoking cessation in patients with coronary heart disease: a systematic review. JAMA. 2003;290(1):86-97. doi:10.1001/jama.290.1.86 (PMID 12837716)',
+});
+
+// ---- Estimativa de risco em 10 anos (Pooled Cohort Equations + fatores extras da literatura) ----
+function pceRisk(male, age, tc, hdl, sbp, treated, smoker, dm) {
+  const la = Math.log(age), ltc = Math.log(tc), lh = Math.log(hdl), ls = Math.log(sbp);
+  if (male) {
+    const x = 12.344 * la + 11.853 * ltc - 2.664 * la * ltc - 7.990 * lh + 1.769 * la * lh + (treated ? 1.797 : 1.764) * ls + (smoker ? 7.837 - 1.795 * la : 0) + (dm ? 0.658 : 0);
+    return 1 - Math.pow(0.9144, Math.exp(x - 61.18));
+  }
+  const x = -29.799 * la + 4.884 * la * la + 13.540 * ltc - 3.114 * la * ltc - 13.578 * lh + 3.149 * la * lh + (treated ? 2.019 : 1.957) * ls + (smoker ? 7.574 - 1.665 * la : 0) + (dm ? 0.661 : 0);
+  return 1 - Math.pow(0.9665, Math.exp(x + 29.18));
+}
+function fmtRiskPct(v) {
+  if (v < 1) return '<1%';
+  return (v >= 10 ? String(Math.round(v)) : v.toFixed(1).replace('.', ',')) + '%';
+}
+function riskBand(v) {
+  return v < 5 ? 'faixa baixa (menos de 5%)' : v < 7.5 ? 'faixa limítrofe (5% a menos de 7,5%)' : v < 20 ? 'faixa intermediária (7,5% a menos de 20%)' : 'faixa alta (20% ou mais)';
+}
+function riskEstimate() {
+  const A = ANS;
+  if (A.D1 === 0) return { secondary: true };
+  if (A.P1 === undefined || A.P1 === null || A.P2 === undefined || A.P2 === null) return { missing: true };
+  const male = A.P1 === 1, ageUsed = [40, 45, 55, 65, 75][A.P2];
+  const bmi = bmiOf(A.P3);
+  // fatores de entrada
+  const F = {
+    htn: A.D2 === 1 || A.D2 === 2, dm: A.D3 === 2, smoke: A.H1 >= 2,
+    chol: A.D4 === 1 || A.D4 === 2, kid: A.D5 === 0, fam: A.F1 === 0,
+    sed: A.H2 === 2 ? 1.16 : A.H2 === 1 ? 1.08 : 1, emo: A.D10n === 2,
+    obese: bmi !== null && bmi >= 30, over: bmi !== null && bmi >= 25 && bmi < 30,
+  };
+  const treated = A.D6 === 0;
+  const sbpOf = on => !on.htn ? 120 : (A.D2 === 1 ? 128 : 150);
+  const lipOf = on => !on.chol ? [180, 50] : (A.D4 === 1 ? [220, 48] : [250, 45]);
+  const calc = on => {
+    const [tc, hdl] = lipOf(on);
+    let v = pceRisk(male, ageUsed, tc, hdl, sbpOf(on), on.htn && treated, on.smoke, on.dm) * 100;
+    if (on.fam) v *= 1.5;
+    v *= on.sed;
+    if (on.obese) v *= 1.10; else if (on.over) v *= 1.04;
+    if (on.emo) v *= 1.5;
+    if (on.kid) v *= 1.4;
+    return v;
+  };
+  const total = calc(F), ref = calc({ htn: false, dm: false, smoke: false, chol: false, kid: false, fam: false, sed: 1, emo: false, obese: false, over: false });
+  const inc = key => { const off = Object.assign({}, F, { [key]: (key === 'sed' ? 1 : false) }); if (key === 'obese' || key === 'over') { off.obese = false; off.over = false; } return Math.round((total / calc(off) - 1) * 100); };
+  const rows = [];
+  const add = (label, answer, key, refs, note) => rows.push({ label, answer, inc: key ? inc(key) : null, refs, note });
+  const ans = id => optText(ITEM[id]);
+  // Linhas: só as respostas que mudam o risco entram com porcentagem; as demais ficam explicadas sem número.
+  if (F.htn) add('Pressão alta', ans('D2'), 'htn', ['PCE13', 'IH04']); else if (A.D2 === 3) add('Pressão', ans('D2'), null, ['HAS20'], 'Não entra no cálculo. Medir a pressão pode mudar o resultado.');
+  if (F.dm) add('Diabetes', ans('D3'), 'dm', ['PCE13', 'IH04']); else if (A.D3 === 1 || A.D3 === 3) add('Açúcar no sangue', ans('D3'), null, ['ADA2'], 'Não entra no cálculo. Medir a glicemia pode mudar o resultado.');
+  if (F.chol) add('Colesterol alto', ans('D4'), 'chol', ['PCE13', 'IH04']); else if (A.D4 === 3) add('Colesterol', ans('D4'), null, ['DIS25'], 'Não entra no cálculo. Medir o colesterol pode mudar o resultado.');
+  if (F.smoke) add('Fumo', ans('H1'), 'smoke', ['PCE13', 'IH04']);
+  if (F.sed > 1) add('Pouca atividade física', ans('H2'), 'sed', ['IH04']);
+  if (F.obese || F.over) add(F.obese ? 'Obesidade' : 'Sobrepeso', bmiText(A.P3), F.obese ? 'obese' : 'over', ['BMI11'], 'Efeito do peso isolado, já descontados pressão, açúcar e colesterol.');
+  if (F.fam) add('Infarto ou AVC na família', ans('F1'), 'fam', ['FAM04'], 'Valor conservador: o estudo mostrou risco maior (2 a 2,6 vezes) quando o evento foi precoce.');
+  if (F.emo) add('Emocional ruim', ans('D10n'), 'emo', ['DEP06'], 'Não é diagnóstico de depressão. Usamos valor abaixo do encontrado para depressão (1,8 vez).');
+  if (F.kid) add('Problema nos rins', ans('D5'), 'kid', ['CKD04']);
+  if (A.H3 === 2) add('Fritura, salgadinho ou refrigerante', ans('H3'), null, ['IH04'], 'Não entra no cálculo (sem número validado para esta pergunta), mas pesa na prevenção.');
+  if (A.H4 === 1) add('Bebida alcoólica', ans('H4'), null, ['PREV21'], 'Não entra no cálculo. Reduzir o álcool ajuda a pressão e o peso.');
+  return { total: Math.min(total, 60), capped: total > 60, ref, male, ageUsed, under40: A.P2 === 0, band: riskBand(Math.min(total, 60)), rows };
+}
+function riskRefKeys(est) { const k = ['PCE13']; (est.rows || []).forEach(r => r.refs.forEach(x => { if (!k.includes(x)) k.push(x); })); return k; }
+function riskPctHTML() {
+  const est = riskEstimate(), keys = est.rows ? riskRefKeys(est) : [];
+  let body;
+  if (est.secondary) body = `<p class="rk-sub">Quem já teve infarto, AVC, angina, stent, ponte ou tem insuficiência cardíaca já está em faixa de risco alto. O cálculo em porcentagem vale para quem ainda não teve esses problemas. O caminho é acompanhamento médico regular.</p>`;
+  else if (est.missing) body = `<p class="rk-sub">Para calcular a estimativa, responda sexo e idade.</p>`;
+  else body = `<div class="rk-big">${fmtRiskPct(est.total)}</div>
+      <div class="rk-sub">chance estimada de infarto ou AVC nos próximos 10 anos, ${est.band}${est.capped ? '. Valor limitado a 60% pelo método' : ''}.</div>
+      <div class="rk-ref">Pessoa da mesma idade e sexo, sem nenhum fator de risco: <strong>${fmtRiskPct(est.ref)}</strong>.${est.under40 ? ' Abaixo de 40 anos, o método usa 40 anos e pode superestimar.' : ''}</div>
+      ${est.rows.length ? est.rows.map(r => `<div class="rk-row"><div class="a">${escapeHtml(r.label)}: ${escapeHtml(r.answer)}<small>${r.note ? escapeHtml(r.note) + ' ' : ''}[${r.refs.map(x => keys.indexOf(x) + 1).join(', ')}]</small></div>${r.inc === null ? '<div class="v n">sem soma</div>' : `<div class="v">+${r.inc}%</div>`}</div>`).join('') : '<p class="rk-sub">Nenhuma resposta aumenta o risco acima da referência.</p>'}
+      <div class="rk-note">O aumento de cada linha é o quanto o risco total sobe por causa daquela resposta, mantendo as outras. As porcentagens se multiplicam e por isso não somam. É uma estimativa educativa baseada em respostas, sem medidas de pressão e colesterol, e não é diagnóstico. Os métodos tendem a superestimar o risco em parte da população brasileira. A decisão é do médico.</div>
+      <div class="rk-note"><strong>Referências</strong><br>${keys.map((k, i) => `${i + 1}. ${escapeHtml(EX_REFS[k])}`).join('<br>')}</div>`;
+  return `<div class="rk-card"><h3>Etapa 1 · Risco cardíaco em porcentagem</h3>${body}</div>`;
+}
+
+// ---- Plano de prevenção ligado às respostas ----
+function preventionPlan() {
+  const A = ANS, out = [], bmi = bmiOf(A.P3);
+  const push = (title, why, actions, efficacy, refs) => out.push({ title, why, actions, efficacy, refs });
+  if (A.H1 >= 2) push('Parar de fumar', `Você respondeu: ${optText(ITEM.H1)}.`,
+    ['Escolher uma data para parar nos próximos 30 dias e avisar a família.', 'Procurar a unidade de saúde: aconselhamento mais medicamento (por prescrição) funcionam melhor que força de vontade sozinha.', 'Disque Saúde 136 e o programa antitabagismo do SUS ajudam gratuitamente.'],
+    'Fumar atual teve risco de infarto 2,9 vezes maior (INTERHEART). Em quem já tem doença do coração, parar de fumar reduziu a mortalidade em cerca de 36% (RR 0,64).', ['TOB21', 'IH04', 'SM03']);
+  if (A.H2 >= 1) push('Mexer-se mais', `Você respondeu: ${optText(ITEM.H2)}.`,
+    ['Meta: 150 a 300 minutos por semana de atividade moderada, como caminhada rápida, e fortalecimento muscular 2 dias por semana.', 'Começar com 10 minutos por dia e aumentar aos poucos.', 'Com dor no peito, falta de ar ou desmaio ao esforço, passar pelo médico antes.'],
+    'Atividade física regular teve risco de infarto 14% menor (OR 0,86) no estudo INTERHEART, e as diretrizes da OMS recomendam a meta ao lado para todos os adultos.', ['PA20', 'IH04']);
+  if (A.D2 === 1 || A.D2 === 2 || A.D2 === 3) push('Cuidar da pressão', `Você respondeu: ${optText(ITEM.D2)}.`,
+    ['Medir a pressão com aparelho validado e anotar os valores.', 'Tomar o remédio todos os dias, se foi indicado, e não suspender sem falar com o médico.', 'Reduzir sal, álcool e peso.', 'Voltar ao médico para ajustar o tratamento se a pressão ficar alta.'],
+    'A cada 10 mmHg de pressão sistólica a menos, o risco de eventos cardiovasculares graves caiu 20% e o de AVC caiu 27% (metanálise de 123 estudos).', ['BP16', 'HAS20', 'HAS24']);
+  if (A.D4 === 1 || A.D4 === 2 || A.D4 === 3) push('Cuidar do colesterol', `Você respondeu: ${optText(ITEM.D4)}.`,
+    ['Fazer o exame de colesterol (perfil lipídico) e levar o resultado ao médico.', 'Reduzir fritura, embutidos e gordura de origem animal; comer mais frutas, verduras e fibras.', 'Se houver remédio indicado, tomar todos os dias.'],
+    'Cada redução de 1 mmol/L (cerca de 39 mg/dL) no LDL diminuiu em torno de 22% os eventos vasculares graves, sem um limite mínimo mostrado.', ['CTT10', 'DIS25', 'PREV21']);
+  if (A.D3 === 1 || A.D3 === 2 || A.D3 === 3) push('Cuidar do açúcar no sangue', `Você respondeu: ${optText(ITEM.D3)}.`,
+    ['Fazer glicemia de jejum e hemoglobina glicada, e levar ao médico.', 'Reduzir doce, refrigerante e farinha branca; manter o peso adequado e se movimentar.', 'Com diabetes, acompanhar também rins, olhos, pés, pressão e colesterol.'],
+    'Diabetes aumentou o risco de infarto 2,4 vezes (INTERHEART). O cuidado conjunto de glicose, pressão e colesterol é a base da prevenção cardiovascular no diabetes.', ['ADA10', 'IH04']);
+  if (bmi !== null && bmi >= 25) push('Cuidar do peso', `Seu IMC ficou em ${fmtDec(bmi)}.`,
+    ['Meta realista: perder de 5% a 10% do peso em alguns meses, com alimentação equilibrada e atividade física.', 'Medir a cintura e acompanhar o peso uma vez por mês.', 'Procurar nutricionista ou equipe de saúde da família.'],
+    'O peso aumenta o risco, em parte por elevar pressão, açúcar e colesterol; por isso reduzir o peso melhora esses três fatores.', ['PREV21', 'BMI11', 'WHO00']);
+  if (A.H3 === 2 || A.H4 === 1) push('Alimentação e bebida', `Você respondeu: ${[A.H3 === 2 ? 'come fritura, salgadinho ou refrigerante quase todo dia' : '', A.H4 === 1 ? 'bebe mais de 2 vezes por semana' : ''].filter(Boolean).join('; ')}.`,
+    ['Trocar fritura por assado ou cozido e refrigerante por água.', 'Comer fruta e verdura todos os dias.', 'Reduzir cerveja e cachaça para o mínimo possível.'],
+    'Consumo diário de frutas e verduras teve risco de infarto 30% menor (OR 0,70) no INTERHEART; as diretrizes europeias de prevenção recomendam alimentação com mais vegetais e menos gordura saturada e sal.', ['IH04', 'PREV21']);
+  if (A.D10n === 2) push('Cuidar do emocional', `Você respondeu: ${optText(ITEM.D10n)}.`,
+    ['Conversar com alguém de confiança e procurar a unidade de saúde ou o psicólogo.', 'Manter sono regular, atividade física e contato com pessoas.', 'Se houver pensamento de se ferir, ligar para o CVV 188 (24 horas) ou SAMU 192.'],
+    'Depressão se associou a risco 1,8 vez maior de doença do coração. A triagem de depressão em adultos é recomendada pela força-tarefa americana de prevenção.', ['DEP06', 'PHQ03', 'DEP23']);
+  if (A.F1 === 0) push('Família com infarto ou AVC', `Você respondeu: ${optText(ITEM.F1)}.`,
+    ['Contar ao médico quem teve o evento e com que idade.', 'Fazer check-up cedo: pressão, glicemia e colesterol.', 'Avisar parentes próximos para também se cuidarem.'],
+    'Ter pai ou mãe com doença do coração precoce dobrou o risco de evento (OR 2,0 em homens e 1,7 em mulheres, após ajustes).', ['FAM04', 'PREV21']);
+  if (A.D5 === 0) push('Cuidar dos rins', `Você respondeu: ${optText(ITEM.D5)}.`,
+    ['Fazer creatinina e exame de urina com albumina, e seguir com o médico.', 'Controlar pressão e açúcar, que protegem os rins.', 'Evitar anti-inflamatórios sem orientação.'],
+    'Rim com menor função se associou a mais eventos cardiovasculares (1,4 vez com filtração entre 45 e 59).', ['CKD04', 'KDIGO']);
+  if (!out.length) push('Manter os bons hábitos', 'Suas respostas não apontaram fatores de risco que possamos ligar a uma ação específica.',
+    ['Manter atividade física, alimentação equilibrada e não fumar.', 'Medir pressão, glicemia e colesterol periodicamente, conforme orientação médica.'],
+    'As diretrizes de prevenção recomendam manter o estilo de vida saudável e reavaliar o risco periodicamente.', ['PREV21', 'PA20']);
+  return out;
+}
+function preventionRefKeys(list) { const k = []; list.forEach(a => a.refs.forEach(r => { if (!k.includes(r)) k.push(r); })); return k; }
+function preventionHTML() {
+  const list = preventionPlan(), keys = preventionRefKeys(list);
+  return `<div class="rk-card"><h3>Etapa 2 · Plano de prevenção</h3><p class="rk-sub">Orientações ligadas às suas respostas. Elas não substituem o médico.</p>
+    ${list.map(a => `<div class="rk-row"><div class="a"><strong>${escapeHtml(a.title)}</strong>: ${escapeHtml(a.why)}<small>${a.actions.map(escapeHtml).join(' ')}</small><small>Evidência: ${escapeHtml(a.efficacy)} [${a.refs.map(r => keys.indexOf(r) + 1).join(', ')}]</small></div></div>`).join('')}
+    <div class="rk-note"><strong>Referências</strong><br>${keys.map((k, i) => `${i + 1}. ${escapeHtml(EX_REFS[k])}`).join('<br>')}</div></div>`;
+}
+
+// ---- Escolha do conteúdo do PDF ----
+let PDF_SECTIONS = { risk: true, prev: true, exams: true };
+function pdfSecSuffix() {
+  const S = PDF_SECTIONS;
+  if (S.risk && S.prev && S.exams) return '';
+  return '_' + [S.risk ? 'Risco' : '', S.prev ? 'Prevencao' : '', S.exams ? 'Exames' : ''].filter(Boolean).join('_');
+}
+function readPdfSelection() {
+  const all = document.getElementById('selAll').checked;
+  const sel = all ? { risk: true, prev: true, exams: true } : { risk: document.getElementById('selRisk').checked, prev: document.getElementById('selPrev').checked, exams: document.getElementById('selExams').checked };
+  return (sel.risk || sel.prev || sel.exams) ? sel : null;
+}
+function pdfSelectionHTML() {
+  return `<div class="share-section pdf-sel"><div class="share-title">📄 PDF personalizado</div>
+    <div class="share-sub">Escolha o que quer no PDF.</div>
+    <label><input type="checkbox" id="selAll" checked> PDF completo (Risco + Prevenção + Exames)</label>
+    <label><input type="checkbox" id="selRisk"> Apenas Risco Cardíaco</label>
+    <label><input type="checkbox" id="selPrev"> Apenas Plano de Prevenção</label>
+    <label><input type="checkbox" id="selExams"> Apenas Exames Recomendados</label>
+    <div class="row2"><button class="share-btn" id="selGenBtn" type="button">📄 Gerar PDF</button><button class="share-btn secondary" id="selShareBtn" type="button">📤 Compartilhar (WhatsApp/E-mail)</button></div>
+    <div id="selPdfArea"></div></div>`;
+}
+function bindPdfSelection() {
+  const all = document.getElementById('selAll'), parts = ['selRisk', 'selPrev', 'selExams'].map(id => document.getElementById(id));
+  all.addEventListener('change', () => { if (all.checked) parts.forEach(c => c.checked = false); else if (!parts.some(c => c.checked)) all.checked = true; });
+  parts.forEach(c => c.addEventListener('change', () => { if (c.checked) all.checked = false; else if (!parts.some(x => x.checked)) all.checked = true; }));
+  const area = document.getElementById('selPdfArea');
+  const withSel = fn => { const sel = readPdfSelection(); if (!sel) { setPdfStatus(area, 'Marque ao menos uma opção.', true); return; } PDF_SECTIONS = sel; try { fn(); } finally { PDF_SECTIONS = { risk: true, prev: true, exams: true }; } };
+  document.getElementById('selGenBtn').addEventListener('click', () => withSel(() => generateDocument('risk', 'selPdfArea')));
+  document.getElementById('selShareBtn').addEventListener('click', () => withSel(async () => {
+    const sel = PDF_SECTIONS;
+    let bytes, file;
+    try { PDF_SECTIONS = sel; bytes = buildRiskPDF(); } catch (e) { setPdfStatus(area, 'Não foi possível gerar o PDF.', true); return; }
+    const name = 'MAVI_Triagem_Saude' + pdfSecSuffix() + '.pdf';
+    try { file = new File([bytes], name, { type: 'application/pdf' }); } catch (e) { file = null; }
+    if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+      try { await navigator.share({ files: [file], title: name }); setPdfStatus(area, 'Escolha o WhatsApp ou o e-mail na tela que abriu.', false); } catch (e) { setPdfStatus(area, 'Envio cancelado.', false); }
+      return;
+    }
+    generateDocument('risk', 'selPdfArea');
+    area.insertAdjacentHTML('beforeend', `<a class="share-wa-link" href="${waLink('', 'Triagem MAVI — PDF em anexo.')}" target="_blank" rel="noopener">📲 Abrir o WhatsApp e anexar o PDF salvo</a>`);
+  }));
+}
+
+function pdfRiskStage(pdf, flow) {
+  const est = riskEstimate();
+  pdfSection(pdf, flow, 'Etapa 1 — Risco cardíaco');
+  if (resultComputed) flow.para(`Nível de risco: ${resultComputed.label}. ${scoreLine()}.`, { font: 'F2', size: 10, lh: 1.4 });
+  flow.gap(4);
+  if (est.secondary) { flow.para('Quem já teve infarto, AVC, angina, stent, ponte ou tem insuficiência cardíaca já está em faixa de risco alto. O cálculo em porcentagem vale para quem ainda não teve esses problemas. O caminho é acompanhamento médico regular.', { size: 9.5, lh: 1.4 }); flow.gap(4); return; }
+  if (est.missing) { flow.para('Estimativa em porcentagem não calculada: sexo e idade não informados.', { size: 9.5, lh: 1.4 }); flow.gap(4); return; }
+  const keys = riskRefKeys(est);
+  flow.para(`Estimativa: ${fmtRiskPct(est.total)} de chance de infarto ou AVC nos próximos 10 anos, ${est.band}.`, { font: 'F2', size: 11, lh: 1.4 });
+  flow.para(`Referência (mesma idade e sexo, sem fatores de risco): ${fmtRiskPct(est.ref)}.${est.under40 ? ' Abaixo de 40 anos o método usa 40 anos e pode superestimar.' : ''}`, { size: 9.3, color: PDF_C.gray, lh: 1.4 });
+  flow.gap(4);
+  flow.para('Por que este risco: aumento de risco por resposta', { font: 'F2', size: 9.8, color: PDF_C.green });
+  flow.gap(2);
+  if (!est.rows.length) { flow.para('Nenhuma resposta aumenta o risco acima da referência.', { size: 9.3, lh: 1.4 }); }
+  est.rows.forEach(r => {
+    flow.para(`• ${r.label}: ${r.answer} — ${r.inc === null ? 'sem soma no cálculo' : '+' + r.inc + '% de risco'} [${r.refs.map(x => keys.indexOf(x) + 1).join(', ')}]${r.note ? '. ' + r.note : ''}`, { size: 9.3, lh: 1.4, indent: 6 });
+    flow.gap(2);
+  });
+  flow.gap(2);
+  flow.para('O aumento de cada resposta é o quanto o risco total sobe por causa dela, mantendo as outras; as porcentagens se multiplicam e não somam. Estimativa educativa a partir de respostas, sem medidas de pressão e colesterol; não é diagnóstico. Os métodos tendem a superestimar o risco em parte da população brasileira. A decisão é do médico.', { size: 8.5, color: PDF_C.gray, lh: 1.4 });
+  flow.gap(4);
+  flow.para('Referências', { font: 'F2', size: 9, color: PDF_C.green }); flow.gap(2);
+  keys.forEach((k, i) => { flow.para((i + 1) + '. ' + EX_REFS[k], { size: 8, color: PDF_C.gray, lh: 1.35 }); flow.gap(2); });
+  flow.gap(4);
+}
+function pdfPreventionStage(pdf, flow) {
+  const list = preventionPlan(), keys = preventionRefKeys(list);
+  pdfSection(pdf, flow, 'Etapa 2 — Prevenção (plano de ação)');
+  flow.para('Orientações ligadas às respostas informadas. Não substituem a avaliação e a conduta do médico.', { size: 9, color: PDF_C.gray, lh: 1.4 });
+  flow.gap(4);
+  list.forEach((a, i) => {
+    flow.para(`${i + 1}. ${a.title}`, { font: 'F2', size: 10.2, lh: 1.35 });
+    flow.para(a.why, { size: 9.2, color: PDF_C.gray, lh: 1.4 });
+    a.actions.forEach(t => { flow.para('• ' + t, { size: 9.3, lh: 1.4, indent: 6 }); flow.gap(1); });
+    flow.para(`Evidência: ${a.efficacy} [${a.refs.map(r => keys.indexOf(r) + 1).join(', ')}]`, { size: 8.8, color: PDF_C.gray, lh: 1.4 });
+    flow.gap(5);
+  });
+  flow.para('Referências', { font: 'F2', size: 9, color: PDF_C.green }); flow.gap(2);
+  keys.forEach((k, i) => { flow.para((i + 1) + '. ' + EX_REFS[k], { size: 8, color: PDF_C.gray, lh: 1.35 }); flow.gap(2); });
+  flow.gap(4);
+}
+
 function buildRiskPDF() {
   const { dateStr, timeStr } = pdfMeta();
   const pdf = newMaviPdf(), flow = new PdfFlow(pdf);
+  const SEL = PDF_SECTIONS;
   pdfHeader(pdf, flow, 'Triagem de Saúde do Coração', dateStr, timeStr);
   pdfMetaBox(pdf, flow, [
     ['Nome completo', idVal('respondentName') || 'Não informado'],
     ['Código de referência', resultComputed ? resultComputed.refCode : '—'],
     ['Data/hora do preenchimento', `${dateStr} às ${timeStr}`],
   ]);
-  if (resultComputed) {
+  if (resultComputed && SEL.risk) {
     const col = resultComputed.alert ? PDF_RISK['risk-alert'] : (PDF_RISK[resultComputed.riskClass] || PDF_C.green);
     const headLines = pdfWrap(scoreLine(), 'F2', 13, flow.w - 28);
     const actLines = pdfWrap(resultComputed.action, 'F1', 9.5, flow.w - 28);
@@ -2457,8 +2699,9 @@ function buildRiskPDF() {
     actLines.forEach(l => { pdf.textEnc(flow.x + 14, y, l, 'F1', 9.5, [255, 255, 255]); y += 12.5; });
     flow.y += h + 16;
   }
-  pdfItems(pdf, flow, RISK_DOC_ITEMS);
-  pdfExams(pdf, flow);
+  if (SEL.risk) { pdfRiskStage(pdf, flow); pdfItems(pdf, flow, RISK_DOC_ITEMS); }
+  if (SEL.prev) pdfPreventionStage(pdf, flow);
+  if (SEL.exams) pdfExams(pdf, flow);
   pdfDisclaimer(pdf, flow, RISK_DISCLAIMER);
   pdfFooters(pdf, `MAVI Assistência à Saúde — documento de triagem, não substitui avaliação profissional. Gerado em ${dateStr} às ${timeStr}.`);
   pdf.meta = pdfPayloadMeta();
@@ -2507,7 +2750,7 @@ function generateDocument(kind, boxId) {
     const y = today.getFullYear(), m = String(today.getMonth()+1).padStart(2,'0'), d = String(today.getDate()).padStart(2,'0');
     if (isRisk) {
       innerHtml = buildRiskPrintHTML();
-      fileTitle = `MAVI_Triagem_Saude_${y}-${m}-${d}`;
+      fileTitle = `MAVI_Triagem_Saude${pdfSecSuffix()}_${y}-${m}-${d}`;
     } else {
       innerHtml = buildCrmPrintHTML();
       fileTitle = `MAVI_Ficha_Relacionamento_${y}-${m}-${d}`;
