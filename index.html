@@ -71,6 +71,10 @@
     margin: 0 auto;
   }
   #offlineBadge { display:none; margin-top:10px; font-size:12px; background:rgba(255,255,255,0.15); padding:4px 10px; border-radius:20px; display:inline-block; }
+  a.perfil-link {
+    display:block; background:var(--green-light); color:var(--green); text-align:center; text-decoration:none;
+    padding:12px; font-size:14px; font-weight:600; border-bottom:1px solid var(--line);
+  }
   button#installBtn {
     display:none; width:100%; background:var(--ochre); color:#fff; border:none;
     padding:12px; font-size:14px; font-weight:600; cursor:pointer;
@@ -789,6 +793,7 @@
   <div id="offlineBadge">📶 Modo offline — funcionando normalmente</div>
 </header>
 <button id="installBtn">⬇️ Instalar app no aparelho</button>
+<a class="perfil-link" href="questionario.html">📋 Questionário de perfil de cuidado</a>
 
 <div class="progress-wrap">
   <div class="pw-row"><span class="progress-label" id="progressLabel">Identificação</span><span class="progress-count" id="progressCount"></span></div>
