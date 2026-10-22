@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2F5D4F">
+<title>MAVI — Roteiro SPIN</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<style>
+  :root { --ochre:#B5732A; --green:#2F5D4F; --green-light:#EAF1EE; --cream:#FBF6EE; --ink:#2A241C; --muted:#6B6156; --line:#E3D8C4; --amber-soft:#FBEBD0; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--cream); color:var(--ink); font-family:'Segoe UI',system-ui,-apple-system,sans-serif; font-size:17px; line-height:1.5; padding-bottom:calc(32px + env(safe-area-inset-bottom,0px)); }
+  header { background:var(--green); color:#fff; padding:calc(14px + env(safe-area-inset-top,0px)) 16px 14px; }
+  .bar-in { max-width:560px; margin:0 auto; display:flex; justify-content:space-between; align-items:center; gap:12px; }
+  header b { font-family:Georgia,'Times New Roman',serif; font-size:20px; letter-spacing:.06em; }
+  header a { color:#fff; font-size:14px; text-decoration:none; border:1px solid rgba(255,255,255,.5); border-radius:20px; padding:6px 12px; }
+  main { max-width:560px; margin:0 auto; padding:18px 16px 0; display:flex; flex-direction:column; gap:16px; }
+  h1,h2 { font-family:Georgia,'Times New Roman',serif; line-height:1.2; margin:0; color:var(--green); }
+  h1 { font-size:27px; } h2 { font-size:19px; }
+  p { margin:0; }
+  .lead { color:var(--muted); }
+  .switch { display:flex; gap:8px; }
+  .switch button { flex:1; font:inherit; font-weight:600; font-size:15px; min-height:48px; border-radius:10px; border:1.5px solid var(--green); background:#fff; color:var(--green); cursor:pointer; }
+  .switch button[aria-pressed="true"] { background:var(--green); color:#fff; }
+  button:focus-visible, a:focus-visible { outline:3px solid var(--ochre); outline-offset:2px; }
+  .step { background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px 16px 6px; }
+  .step h2 { display:flex; gap:10px; align-items:center; margin-bottom:6px; }
+  .step h2 span { flex:none; width:30px; height:30px; border-radius:8px; background:var(--green); color:#fff; display:grid; place-items:center; font-size:16px; }
+  .q { display:flex; gap:12px; padding:12px 0; border-top:1px solid var(--line); }
+  .q .n { flex:none; width:22px; font-weight:700; color:var(--ochre); }
+  .q.hide { display:none; }
+  .step.empty { display:none; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px; display:flex; flex-direction:column; gap:8px; }
+  .card ul { margin:0; padding-left:20px; display:flex; flex-direction:column; gap:6px; }
+  .note { background:var(--amber-soft); border-radius:10px; padding:14px; font-size:15.5px; display:flex; flex-direction:column; gap:8px; }
+  [hidden] { display:none !important; }
+</style>
+</head>
+<body>
+<header><div class="bar-in"><b>MAVI</b><a href="index.html">&larr; Triagem</a></div></header>
+
+<main>
+  <div>
+    <h1>Roteiro SPIN</h1>
+    <p class="lead">Conversa oral para o captador. Deixe a pessoa falar e use as palavras dela na oferta.</p>
+  </div>
+
+  <div class="switch" role="group" aria-label="Versão do roteiro">
+    <button type="button" id="bFull" aria-pressed="true">Completo (8)</button>
+    <button type="button" id="bShort" aria-pressed="false">Visita rápida (4)</button>
+  </div>
+
+  <section class="step" data-s="1"><h2><span>S</span>Situação</h2>
+    <div class="q" data-n="1"><div class="n">1</div><div>"Quando o senhor(a) ou alguém da família precisa de exame ou consulta, onde costuma resolver?"</div></div>
+    <div class="q" data-n="2"><div class="n">2</div><div>"Quando foi a última vez que fez um exame sem estar sentindo nada?"</div></div>
+  </section>
+  <section class="step" data-s="2"><h2><span>P</span>Problema</h2>
+    <div class="q" data-n="3"><div class="n">3</div><div>"O que mais atrapalha na hora de cuidar da saúde: preço, distância, demora ou medo do resultado?"</div></div>
+    <div class="q" data-n="4"><div class="n">4</div><div>"Já deixou de ir ao médico ou de fazer um exame por causa disso?"</div></div>
+  </section>
+  <section class="step" data-s="3"><h2><span>I</span>Implicação</h2>
+    <div class="q" data-n="5"><div class="n">5</div><div>"Quando isso acontece, o que muda para a família: falta ao trabalho, gasto de última hora, viagem para outra cidade?"</div></div>
+    <div class="q" data-n="6"><div class="n">6</div><div>"Se um problema fosse descoberto só tarde, o que isso custaria para o senhor(a) e para quem depende do senhor(a)?"</div></div>
+  </section>
+  <section class="step" data-s="4"><h2><span>N</span>Necessidade de solução</h2>
+    <div class="q" data-n="7"><div class="n">7</div><div>"Se existisse exame e consulta perto de casa, com mensalidade que cabe no bolso, o que isso precisaria ter?"</div></div>
+    <div class="q" data-n="8"><div class="n">8</div><div>"O que pesa mais para o senhor(a): pagar pouco por mês, ser atendido rápido ou ter a família toda coberta?"</div></div>
+  </section>
+
+  <section class="card">
+    <h2>Como usar a resposta</h2>
+    <ul>
+      <li>Repita as palavras da pessoa: "O senhor disse que a viagem custa caro, então o exame aqui resolve isso."</li>
+      <li>A pergunta 8 define o plano: preço baixo, individual. Família, familiar. Rapidez, telemedicina.</li>
+      <li>Faça o roteiro primeiro e o questionário de perfil depois.</li>
+    </ul>
+  </section>
+
+  <section class="note">
+    <b>Cuidado</b>
+    <p>Não use medo para vender. Não cite doença específica nem prometa resultado. Use só o prejuízo que a própria pessoa falou. Se ela parecer ansiosa, pule a pergunta 6.</p>
+    <p>Roteiro ainda não validado. A gestão vai comparar os resultados por 30 dias.</p>
+  </section>
+
+  <a class="lead" href="questionario.html" style="text-align:center;color:var(--green);font-weight:600">Abrir o questionário de perfil de cuidado</a>
+</main>
+
+<script>
+var SHORT = { '1':1, '4':1, '5':1, '8':1 };
+function setMode(short) {
+  document.getElementById('bFull').setAttribute('aria-pressed', short ? 'false' : 'true');
+  document.getElementById('bShort').setAttribute('aria-pressed', short ? 'true' : 'false');
+  var qs = document.querySelectorAll('.q');
+  for (var i = 0; i < qs.length; i++) qs[i].classList.toggle('hide', short && !SHORT[qs[i].getAttribute('data-n')]);
+  var steps = document.querySelectorAll('.step');
+  for (var j = 0; j < steps.length; j++) {
+    var visible = steps[j].querySelectorAll('.q:not(.hide)').length;
+    steps[j].classList.toggle('empty', visible === 0);
+  }
+}
+document.getElementById('bFull').addEventListener('click', function () { setMode(false); });
+document.getElementById('bShort').addEventListener('click', function () { setMode(true); });
+</script>
+</body>
+</html>
