@@ -3900,7 +3900,7 @@ async function cloudLoadRecords(cloud) {
   }
   const out = await Promise.all(raws.map(r => decryptRecord(adminPrivKey, r).catch(() => null)));
   adminRecords = out.filter(Boolean).filter(r => r.createdAt && r.ans && typeof r.ans === 'object');
-  adminQ2 = dedupeRecords(out.filter(r => r && r.kind === 'q2' && Array.isArray(r.q2)));
+  adminQ2 = dedupeRecords(out.filter(r => r && r.kind === 'q2' && r.q2 && typeof r.q2 === 'object'));
   adminUnreadable = raws.length - adminRecords.length - adminQ2.length + cloudBadRecs;
   adminRecords = dedupeRecords(adminRecords);
   adminSenders = senders.size;
@@ -4097,7 +4097,7 @@ async function loadAdminRecords() {
   const raw = await idb('records', 'readonly', s => s.getAll());
   const out = await Promise.all((raw || []).map(r => decryptRecord(adminPrivKey, r).catch(() => null)));
   adminRecords = out.filter(Boolean).filter(r => r.createdAt && r.ans && typeof r.ans === 'object');
-  adminQ2 = dedupeRecords(out.filter(r => r && r.kind === 'q2' && Array.isArray(r.q2)));
+  adminQ2 = dedupeRecords(out.filter(r => r && r.kind === 'q2' && r.q2 && typeof r.q2 === 'object'));
   adminUnreadable = (raw || []).length - adminRecords.length - adminQ2.length;
   adminRecords = dedupeRecords(adminRecords);
   await loadAdminPdfMeta();
