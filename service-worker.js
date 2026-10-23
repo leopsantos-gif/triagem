@@ -5,7 +5,7 @@
 // - Demais arquivos (ícones, manifest): usa a cópia guardada primeiro.
 // - Nenhum dado de questionário passa por aqui: os registros ficam no IndexedDB do aparelho.
 
-const CACHE_NAME = 'mavi-triagem-v25';
+const CACHE_NAME = 'mavi-triagem-v26';
 const ASSETS = ['./', './index.html', './questionario.html', './roteiro.html', './questionario2.html', './manifest.json', './manifest-cardio.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', (event) => {
