@@ -3423,7 +3423,7 @@ async function renderSaved(note) {
   const remote = (adminPrivKey && Array.isArray(adminQ2) ? adminQ2 : []).filter(r => !localIds.has(r.id))
     .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
   const q2Name = r => r.nome || (r.contact && r.contact.name) || 'Sem nome';
-  const remoteHTML = adminPrivKey ? `<h3 style="margin:22px 0 8px">🫀 Exames e coração recebidos de outros celulares (${remote.length})</h3>
+  const remoteHTML = adminPrivKey ? `<h3 id="svRemote" style="margin:22px 0 8px">🫀 Exames e coração recebidos de outros celulares (${remote.length})</h3>
       ${remote.map(r => `<div class="sv-item">
         <div class="sv-main"><strong>${escapeHtml(q2Name(r))}</strong><span>${escapeHtml(['Exames e coração', r.consultor ? 'Consultor: ' + r.consultor : '', r.municipio, r.local].filter(Boolean).join(' · '))}</span><span>${escapeHtml(fmt(r.createdAt))}</span></div>
         <span class="sv-chip ok">Recebida</span>
@@ -5458,7 +5458,8 @@ function renderDashboard() {
 
   adminArea.innerHTML = admShell(`
     <h2 class="pnl-title">Painel de Análises e Triagem</h2>
-    <button class="adm-btn" id="admSavedBtn" type="button" style="margin:0 0 12px">📋 Triagens salvas neste celular</button>
+    <button class="adm-btn" id="admSavedBtn" type="button" style="margin:0 0 10px">📋 Triagens salvas neste celular</button>
+    <button class="adm-btn" id="admQ2RemoteBtn" type="button" style="margin:0 0 12px">🫀 Exames e coração recebidos de outros celulares (${fmtInt(adminQ2.length)})</button>
     <p class="pnl-sub">${fmtInt(total)} questionário${total === 1 ? '' : 's'} no filtro atual.</p>
     ${filters}
     ${overviewHTML(recs)}
@@ -5511,6 +5512,12 @@ function renderDashboard() {
     bumpAdminIdle();
     const txt = 'Olá! Este é o questionário MAVI de exames e cuidados com o coração. Abra no celular e salve na tela inicial: ' + q2Link();
     window.open('https://wa.me/?text=' + encodeURIComponent(txt), '_blank');
+  });
+  document.getElementById('admQ2RemoteBtn').addEventListener('click', async () => {
+    bumpAdminIdle(); openSaved();
+    try { await loadAdminRecords(); await renderSaved(); renderDashboard(); } catch (e) {}
+    const h = document.getElementById('svRemote');
+    if (h) savedArea.scrollTop = Math.max(0, h.offsetTop - 70);
   });
   document.getElementById('admSavedBtn').addEventListener('click', async () => {
     bumpAdminIdle(); openSaved();
