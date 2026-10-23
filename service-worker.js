@@ -5,8 +5,8 @@
 // - Demais arquivos (ícones, manifest): usa a cópia guardada primeiro.
 // - Nenhum dado de questionário passa por aqui: os registros ficam no IndexedDB do aparelho.
 
-const CACHE_NAME = 'mavi-triagem-v22';
-const ASSETS = ['./', './index.html', './questionario.html', './roteiro.html', './questionario2.html', './manifest.json', './icon-192.png', './icon-512.png'];
+const CACHE_NAME = 'mavi-triagem-v23';
+const ASSETS = ['./', './index.html', './questionario.html', './roteiro.html', './questionario2.html', './manifest.json', './manifest-cardio.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)));

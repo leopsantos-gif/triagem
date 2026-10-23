@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#2F5D4F">
 <title>MAVI Cardio — Questionário 2</title>
-<link rel="manifest" href="manifest.json">
+<link rel="manifest" href="manifest-cardio.json">
 <link rel="icon" href="icon-192.png">
 <style>
   :root {
@@ -65,24 +65,43 @@
   .actions .btn { flex: 1 1 150px; }
   [hidden] { display: none !important; }
   @media (prefers-reduced-motion: reduce) { .track span { transition: none; } }
+
+  input[type="tel"], textarea.txt { font: inherit; padding: 13px; border-radius: 8px; border: 1.5px solid var(--line); background: var(--cream); color: var(--ink); width: 100%; min-width: 0; }
+  .opt.sq i { border-radius: 5px; }
+  .opt.sq[aria-pressed="true"] i { background: var(--green); box-shadow: inset 0 0 0 3px #fff; }
+  .hint { font-size: 14px; color: var(--muted); }
+  .check { display: flex; gap: 10px; align-items: flex-start; font-size: 15px; }
+  .check input { width: 22px; height: 22px; flex: none; margin-top: 2px; accent-color: var(--green); }
+  .err { color: #A3341F; font-size: 14.5px; font-weight: 600; }
 </style>
 </head>
 <body>
 <header>
-  <div class="bar-in"><b>MAVI CARDIO</b><a href="index.html">← Triagem</a></div>
+  <div class="bar-in"><b>MAVI CARDIO</b><a href="index.html" id="backTri" hidden>← Triagem</a></div>
 </header>
 
 <main>
   <section id="s-intro" class="card">
-    <h1>Exames e cuidado do coração</h1>
-    <p class="lead">São 5 perguntas rápidas. Leva menos de 1 minuto.</p>
-    <label class="field" for="nome">Nome (opcional)
-      <input id="nome" type="text" autocomplete="off" placeholder="Nome da pessoa">
+    <h1>Exames e cuidados com o coração</h1>
+    <p class="lead">São 6 perguntas rápidas. Leva cerca de 1 minuto.</p>
+    <label class="field" for="nome">Nome
+      <input id="nome" type="text" autocomplete="off" maxlength="120" placeholder="Nome da pessoa">
     </label>
     <label class="field" for="cidade">Município
-      <input id="cidade" type="text" list="munis" autocomplete="off" maxlength="60" placeholder="Digite o município (opcional)">
+      <input id="cidade" type="text" list="munis" autocomplete="off" maxlength="60" placeholder="Digite o município">
     </label>
     <datalist id="munis"><option value="Custódia-PE"><option value="Triunfo-PE"><option value="Fátima (Flores)-PE"><option value="Tavares-PB"></datalist>
+    <label class="field" for="local">Local
+      <input id="local" type="text" autocomplete="off" maxlength="80" placeholder="Bairro, sítio, rua ou ponto">
+    </label>
+    <label class="field" for="whats">WhatsApp
+      <input id="whats" type="tel" inputmode="tel" autocomplete="off" maxlength="20" placeholder="(87) 9 0000-0000">
+    </label>
+    <label class="check" for="okContato"><input type="checkbox" id="okContato"> A pessoa autoriza a MAVI a entrar em contato por WhatsApp.</label>
+    <label class="field" for="consultor">Consultor
+      <input id="consultor" type="text" autocomplete="off" maxlength="80" placeholder="Seu nome">
+    </label>
+    <p class="err" id="introErr" hidden></p>
     <button class="btn" id="start" type="button">Começar</button>
   </section>
 
@@ -92,12 +111,19 @@
       <div class="track"><span id="fill"></span></div>
     </div>
     <h2 id="qtitle"></h2>
+    <p class="hint" id="qhint" hidden></p>
     <div class="opts" id="opts"></div>
-    <div><button class="btn ghost small" id="back" type="button">Voltar</button></div>
+    <label class="field" id="txtWrap" hidden><span id="txtLabel"></span>
+      <input id="txt" type="text" autocomplete="off" maxlength="200">
+    </label>
+    <div class="actions">
+      <button class="btn ghost small" id="back" type="button">Voltar</button>
+      <button class="btn small" id="next" type="button" hidden>Continuar</button>
+    </div>
   </section>
 
   <section id="s-r" class="card" hidden>
-    <span class="pill">Questionário 2</span>
+    <span class="pill">Exames e cuidados com o coração</span>
     <h2>Respostas</h2>
     <div class="rows" id="rows"></div>
     <div>
@@ -113,23 +139,125 @@
 </main>
 
 <script>
+// ---------------- Perguntas ----------------
+// multi: pode marcar mais de uma; excl: opções que desmarcam as outras;
+// text: campo para digitar quando a opção indicada estiver marcada.
 var QUESTIONS = [
-  { k: 'Último exame', t: 'Quanto tempo faz que o(a) senhor(a) fez algum exame?', o: [
-    'Menos de 6 meses', 'Entre 6 meses e 1 ano', 'Entre 1 e 2 anos', 'Mais de 2 anos', 'Nunca fiz / não lembro' ] },
-  { k: 'Família', t: 'Tem alguém na família com pressão alta ou problema do coração?', o: [
-    'Sim, pai, mãe ou irmãos', 'Sim, outros parentes (avós, tios)', 'Não', 'Não sei' ] },
-  { k: 'Plano atual', t: 'O(a) senhor(a) tem algum plano assistencial?', o: [
-    'Plano de saúde', 'Plano funerário ou assistencial', 'Cartão de desconto', 'Não tenho nenhum' ] },
-  { k: 'Segundo plano', t: 'E se o(a) senhor(a) tivesse um segundo plano que desse um desconto grande?', o: [
-    'Sim, teria', 'Talvez, depende do valor', 'Não teria' ] },
-  { k: 'Valor do exame', t: 'O(a) senhor(a) sabe o valor de um exame de coração?', o: [
-    'Sim, sei quanto custa', 'Tenho uma ideia', 'Não faço ideia' ] }
+  { id: 'exame', k: 'Último exame', t: 'Quanto tempo faz que o(a) senhor(a) fez algum exame?', o: [
+    'Menos de 6 meses', 'Entre 6 meses e 1 ano', 'Entre 1 e 2 anos', 'Mais de 2 anos', 'Nunca fiz / não lembro'] },
+  { id: 'familia', k: 'Família', t: 'Tem alguém na família com pressão alta, problema do coração ou diabetes?', multi: true, excl: [3, 4], o: [
+    'Pressão alta ou coração: pai, mãe ou irmãos', 'Pressão alta ou coração: outros parentes', 'Diabetes', 'Não', 'Não sei'] },
+  { id: 'plano', k: 'Plano assistencial', t: 'O(a) senhor(a) tem qual plano assistencial ou funerário?', multi: true, excl: [6], o: [
+    'BM', 'System', 'Uniplan ou Eterna', 'Cartão de Todos', 'Total Saúde', 'Outro', 'Nenhum'], text: { when: 5, label: 'Qual outro plano?' } },
+  { id: 'conhece', k: 'Conhece alguém com problema de saúde', t: 'O(a) senhor(a) conhece alguém que tem algum problema de saúde?', o: [
+    'Sim', 'Não'], text: { when: 0, label: 'Quem?' } },
+  { id: 'saude', k: 'Problema de saúde', t: 'O(a) senhor(a) tem algum problema de saúde?', multi: true, excl: [6], o: [
+    'Pressão alta ou coração', 'Diabetes', 'Ortopédico', 'Psiquiátrico', 'Neurológico', 'Outro', 'Nenhum'], text: { when: 5, label: 'Qual outro problema?' } },
+  { id: 'tele', k: 'Telemedicina', t: 'O(a) senhor(a) faria uma consulta por telemedicina?', o: [
+    'Sim', 'Talvez', 'Não'] }
 ];
 
+var ans = {}, txt = {}, cur = 0;
+function $(id) { return document.getElementById(id); }
+function show(id) { ['s-intro', 's-q', 's-r'].forEach(function (s) { $(s).hidden = (s !== id); }); window.scrollTo(0, 0); }
+function sel(q) { var v = ans[q.id]; return q.multi ? (v || []) : (v === undefined ? [] : [v]); }
+function needsText(q) { return q.text && sel(q).indexOf(q.text.when) >= 0; }
 
-// ---- Envio para o Painel de Análises ----
-// Usa o mesmo banco do app (mesmo aparelho): a resposta fica cifrada em
-// "Triagens salvas" e é enviada à coordenação quando a Triagem abrir com internet.
+function render() {
+  var q = QUESTIONS[cur];
+  $('part').textContent = q.k;
+  $('count').textContent = 'Pergunta ' + (cur + 1) + ' de ' + QUESTIONS.length;
+  $('fill').style.width = (cur / QUESTIONS.length * 100) + '%';
+  $('qtitle').textContent = q.t;
+  $('qhint').hidden = !q.multi; $('qhint').textContent = 'Pode marcar mais de uma.';
+  $('back').style.visibility = cur === 0 ? 'hidden' : 'visible';
+  var chosen = sel(q);
+  var box = $('opts'); box.innerHTML = '';
+  q.o.forEach(function (op, i) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'opt' + (q.multi ? ' sq' : '');
+    b.setAttribute('aria-pressed', chosen.indexOf(i) >= 0 ? 'true' : 'false');
+    var dot = document.createElement('i'); dot.setAttribute('aria-hidden', 'true');
+    var tx = document.createElement('span'); tx.textContent = op;
+    b.appendChild(dot); b.appendChild(tx);
+    b.addEventListener('click', function () { choose(i); });
+    box.appendChild(b);
+  });
+  var nt = needsText(q);
+  $('txtWrap').hidden = !nt;
+  if (nt) { $('txtLabel').textContent = q.text.label; $('txt').value = txt[q.id] || ''; }
+  $('next').hidden = !(q.multi || nt);
+  $('next').disabled = !chosen.length;
+}
+
+function choose(i) {
+  var q = QUESTIONS[cur];
+  if (q.multi) {
+    var v = (ans[q.id] || []).slice();
+    var at = v.indexOf(i);
+    if (at >= 0) v.splice(at, 1);
+    else if (q.excl.indexOf(i) >= 0) v = [i];
+    else { v = v.filter(function (x) { return q.excl.indexOf(x) < 0; }); v.push(i); }
+    ans[q.id] = v.sort(function (a, b) { return a - b; });
+    render();
+    if (needsText(q)) $('txt').focus();
+    return;
+  }
+  ans[q.id] = i;
+  render();
+  if (needsText(q)) { $('txt').focus(); return; }
+  setTimeout(advance, 220);
+}
+
+function advance() {
+  var q = QUESTIONS[cur];
+  if (needsText(q)) txt[q.id] = $('txt').value.trim().slice(0, 200); else delete txt[q.id];
+  if (cur < QUESTIONS.length - 1) { cur++; render(); } else { finish(); }
+}
+
+function answerText(q) {
+  var s = sel(q).map(function (i) { return q.o[i]; });
+  if (needsText(q) && txt[q.id]) s.push(q.text.label.replace('?', '') + ': ' + txt[q.id]);
+  return s.join('; ') || 'Não respondido';
+}
+
+function finish() {
+  var el = $('rows'); el.innerHTML = '';
+  var nome = $('nome').value.trim(), cid = $('cidade').value.trim(), loc = $('local').value.trim();
+  var wa = $('whats').value.replace(/\D/g, ''), cons = $('consultor').value.trim();
+  var lines = [];
+  QUESTIONS.forEach(function (q) {
+    var v = answerText(q);
+    var d = document.createElement('div'); d.className = 'row';
+    var a = document.createElement('div'); a.className = 'k'; a.textContent = q.k;
+    var b = document.createElement('div'); b.className = 'v'; b.textContent = v;
+    d.appendChild(a); d.appendChild(b); el.appendChild(d);
+    lines.push(q.k + ': ' + v);
+  });
+  $('summary').textContent =
+    'MAVI Cardio - Exames e cuidados com o coração - ' + new Date().toLocaleDateString('pt-BR') + '\n' +
+    'Nome: ' + (nome || 'não informado') + '\n' +
+    'Município: ' + (cid || 'não informado') + '\n' +
+    'Local: ' + (loc || 'não informado') + '\n' +
+    'WhatsApp: ' + ($('whats').value.trim() || 'não informado') + '\n' +
+    'Consultor: ' + (cons || 'não informado') + '\n' + lines.join('\n');
+  show('s-r');
+  var msg = $('saveMsg'); msg.textContent = 'Salvando…';
+  if (!(window.indexedDB && window.crypto && crypto.subtle)) { msg.textContent = 'Este aparelho não consegue salvar. Copie o resumo.'; return; }
+  var now = new Date().toISOString();
+  var q2 = {}; QUESTIONS.forEach(function (q) { q2[q.id] = q.multi ? sel(q) : (ans[q.id] === undefined ? null : ans[q.id]); });
+  var payload = { id: newId(), kind: 'q2', q2v: 2, formVersion: 'q2-2026-10-v2', createdAt: now, updatedAt: now,
+    municipio: cid || null, local: loc || null, consultor: cons || null,
+    consentContact: $('okContato').checked,
+    contact: $('okContato').checked ? { name: nome.slice(0, 120), phone: wa.slice(0, 15) } : null,
+    q2: q2, txt: Object.assign({}, txt) };
+  saveQ2(payload, nome)
+    .then(function () { msg.textContent = 'Salvo. Enviando…'; return flush(); })
+    .then(function (n) { msg.textContent = n ? 'Salvo e enviado para a MAVI.' : 'Salvo neste celular. Será enviado quando houver internet.'; },
+          function () { msg.textContent = 'Não foi possível salvar. Copie o resumo.'; });
+}
+
+// ---------------- Guardar no aparelho (cifrado) ----------------
 function openDb() {
   return new Promise(function (res, rej) {
     var req = indexedDB.open('mavi_triagem_db', 3);
@@ -158,96 +286,122 @@ async function deviceKey() {
   await idb('meta', 'readwrite', function (st) { return st.put({ k: 'devkey', v: k }); });
   return k;
 }
+var enc = new TextEncoder();
+async function rsaSeal(pub, obj, id) {
+  var raw = crypto.getRandomValues(new Uint8Array(32));
+  var k = await crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['encrypt']);
+  var iv = crypto.getRandomValues(new Uint8Array(12));
+  var ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv, additionalData: enc.encode(id) }, k, enc.encode(JSON.stringify(obj))));
+  var ek = new Uint8Array(await crypto.subtle.encrypt({ name: 'RSA-OAEP' }, pub, raw)); raw.fill(0);
+  return { iv: iv, ek: ek, ct: ct };
+}
 async function saveQ2(payload, name) {
-  var enc = new TextEncoder();
   var key = await deviceKey();
   var iv = crypto.getRandomValues(new Uint8Array(12));
   var ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv, additionalData: enc.encode(payload.id) }, key,
     enc.encode(JSON.stringify({ payload: payload, name: name || '' }))));
   await idb('saved', 'readwrite', function (st) { return st.put({ id: payload.id, createdAt: payload.createdAt, savedAt: new Date().toISOString(), synced: 0, iv: iv, ct: ct }); });
-  // Modo deste aparelho (sem coordenação): também cifra com a chave da área restrita, se existir.
   var adm = await idb('meta', 'readonly', function (st) { return st.get('admin'); });
   if (adm && adm.v && adm.v.pubSpki) {
     var pub = await crypto.subtle.importKey('spki', adm.v.pubSpki, { name: 'RSA-OAEP', hash: 'SHA-256' }, false, ['encrypt']);
-    var raw = crypto.getRandomValues(new Uint8Array(32));
-    var k2 = await crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['encrypt']);
-    var iv2 = crypto.getRandomValues(new Uint8Array(12));
-    var ct2 = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv2, additionalData: enc.encode(payload.id) }, k2, enc.encode(JSON.stringify(payload))));
-    var ek = new Uint8Array(await crypto.subtle.encrypt({ name: 'RSA-OAEP' }, pub, raw)); raw.fill(0);
-    await idb('records', 'readwrite', function (st) { return st.put({ id: payload.id, v: 1, savedAt: new Date().toISOString(), iv: iv2, ek: ek, ct: ct2 }); });
+    var e = await rsaSeal(pub, payload, payload.id);
+    await idb('records', 'readwrite', function (st) { return st.put(Object.assign({ id: payload.id, v: 1, savedAt: new Date().toISOString() }, e)); });
   }
 }
-function newId() { return (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2)); }
-
-var ans = [], cur = 0;
-function $(id) { return document.getElementById(id); }
-function show(id) { ['s-intro', 's-q', 's-r'].forEach(function (s) { $(s).hidden = (s !== id); }); window.scrollTo(0, 0); }
-
-function render() {
-  var q = QUESTIONS[cur];
-  $('part').textContent = q.k;
-  $('count').textContent = 'Pergunta ' + (cur + 1) + ' de ' + QUESTIONS.length;
-  $('fill').style.width = (cur / QUESTIONS.length * 100) + '%';
-  $('qtitle').textContent = q.t;
-  $('back').style.visibility = cur === 0 ? 'hidden' : 'visible';
-  var box = $('opts'); box.innerHTML = '';
-  q.o.forEach(function (op, i) {
-    var b = document.createElement('button');
-    b.type = 'button'; b.className = 'opt';
-    b.setAttribute('aria-pressed', ans[cur] === i ? 'true' : 'false');
-    var dot = document.createElement('i'); dot.setAttribute('aria-hidden', 'true');
-    var tx = document.createElement('span'); tx.textContent = op;
-    b.appendChild(dot); b.appendChild(tx);
-    b.addEventListener('click', function () { choose(i); });
-    box.appendChild(b);
-  });
+function newId() {
+  if (crypto.randomUUID) return crypto.randomUUID();
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) { var r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 3 | 8)).toString(16); });
 }
 
-function choose(i) {
-  ans[cur] = i;
-  render();
-  setTimeout(function () {
-    if (cur < QUESTIONS.length - 1) { cur++; render(); } else { finish(); }
-  }, 220);
+// ---------------- Envio para a MAVI (sem precisar abrir a Triagem) ----------------
+// Mesmo caminho da Triagem: cifra com a chave pública da coordenação e grava
+// pela função "triagem-envio". Só a área restrita consegue abrir.
+var SB_URL = 'https://gzpijutkmamzwgyytyur.supabase.co';
+var SB_KEY = 'sb_publishable_eD46xSmXU7XRNb7KkkgShg_K9PgWgpI';
+function devId() {
+  var d = null; try { d = localStorage.getItem('mavi_sb_device_v1'); } catch (e) {}
+  if (!d || !/^[0-9a-f-]{36}$/.test(d)) { d = newId(); try { localStorage.setItem('mavi_sb_device_v1', d); } catch (e) {} }
+  return d;
 }
-
-function finish() {
-  var el = $('rows'); el.innerHTML = '';
-  var lines = [];
-  QUESTIONS.forEach(function (q, n) {
-    var v = q.o[ans[n]];
-    var d = document.createElement('div'); d.className = 'row';
-    var a = document.createElement('div'); a.className = 'k'; a.textContent = q.k;
-    var b = document.createElement('div'); b.className = 'v'; b.textContent = v;
-    d.appendChild(a); d.appendChild(b); el.appendChild(d);
-    lines.push(q.k + ': ' + v);
-  });
-  var nome = $('nome').value.trim();
-  $('summary').textContent =
-    'MAVI Cardio - Questionário 2 - ' + new Date().toLocaleDateString('pt-BR') + '\n' +
-    'Nome: ' + (nome || 'não informado') + '\n' + lines.join('\n');
-  show('s-r');
-  var msg = $('saveMsg'); msg.textContent = 'Salvando…';
-  if (!(window.indexedDB && window.crypto && crypto.subtle)) { msg.textContent = 'Este aparelho não consegue salvar. Copie o resumo.'; return; }
-  var now = new Date().toISOString();
-  saveQ2({ id: newId(), kind: 'q2', formVersion: 'q2-2026-10-v1', createdAt: now, updatedAt: now,
-    municipio: $('cidade').value.trim() || null, q2: ans.slice() }, nome)
-    .then(function () { msg.textContent = 'Salvo. Vai para o Painel de Análises quando a Triagem abrir com internet.'; },
-          function () { msg.textContent = 'Não foi possível salvar. Copie o resumo.'; });
+async function sbFn(method, body) {
+  var r = await fetch(SB_URL + '/functions/v1/triagem-envio', { method: method, headers: { apikey: SB_KEY, 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
+  if (!r.ok) throw new Error('fn ' + r.status);
+  return r.json();
 }
+function b64(u8) { var s = ''; for (var i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); }
+function unb64(s) { var b = atob(s), u = new Uint8Array(b.length); for (var i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; }
+async function pubKey() {
+  var spki = null;
+  try { var j = await sbFn('GET'); if (j.exists && j.data && j.data.pubSpki) { spki = j.data.pubSpki; try { localStorage.setItem('mavi_cloud_pub_v1', spki); } catch (e) {} } }
+  catch (e) { try { spki = localStorage.getItem('mavi_cloud_pub_v1'); } catch (e2) {} }
+  if (!spki) return null;
+  return crypto.subtle.importKey('spki', unb64(spki), { name: 'RSA-OAEP', hash: 'SHA-256' }, false, ['encrypt']);
+}
+var flushing = null;
+function flush() {
+  if (flushing) return flushing;
+  flushing = (async function () {
+    if (!navigator.onLine) return 0;
+    var all = (await idb('saved', 'readonly', function (st) { return st.getAll(); })) || [];
+    var pend = all.filter(function (r) { return !r.synced; });
+    if (!pend.length) return 0;
+    var key = await deviceKey(), pub = await pubKey();
+    if (!pub) return 0;
+    var uid = devId(), n = 0;
+    for (var i = 0; i < pend.length; i++) {
+      var r = pend[i];
+      try {
+        var pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: r.iv, additionalData: enc.encode(r.id) }, key, r.ct);
+        var o = JSON.parse(new TextDecoder().decode(pt));
+        if (!o.payload || o.payload.kind !== 'q2') continue; // as triagens são enviadas pela própria Triagem
+        var e = await rsaSeal(pub, o.payload, r.id);
+        await sbFn('POST', { path: 'inbox/' + uid, data: { updatedAt: r.savedAt } });
+        await sbFn('POST', { path: 'inbox/' + uid + '/recs/' + r.id, data: { v: 1, savedAt: r.savedAt, iv: b64(e.iv), ek: b64(e.ek), ct: b64(e.ct) } });
+        var cur2 = await idb('saved', 'readonly', function (st) { return st.get(r.id); });
+        if (cur2 && cur2.savedAt === r.savedAt) { cur2.synced = 1; cur2.syncedAt = new Date().toISOString(); await idb('saved', 'readwrite', function (st) { return st.put(cur2); }); }
+        n++;
+      } catch (err) { /* tenta de novo depois */ }
+    }
+    return n;
+  })().finally(function () { flushing = null; });
+  return flushing;
+}
+window.addEventListener('online', function () { flush().catch(function () {}); });
+setTimeout(function () { flush().catch(function () {}); }, 1500);
 
-$('start').addEventListener('click', function () { ans = []; cur = 0; show('s-q'); render(); });
-$('back').addEventListener('click', function () { if (cur > 0) { cur--; render(); } });
-$('again').addEventListener('click', function () { ans = []; cur = 0; $('nome').value = ''; $('cidade').value = ''; $('copy').textContent = 'Copiar resumo'; show('s-intro'); });
+// ---------------- Tela ----------------
+try { if (document.referrer && /\/(index\.html)?(\?|#|$)/.test(new URL(document.referrer).pathname + '') && new URL(document.referrer).origin === location.origin) $('backTri').hidden = false; } catch (e) {}
+try { var c0 = new URLSearchParams(location.search).get('c') || localStorage.getItem('mavi_q2_consultor'); if (c0) $('consultor').value = c0; } catch (e) {}
+if ('serviceWorker' in navigator) { navigator.serviceWorker.register('service-worker.js').catch(function () {}); }
+
+$('start').addEventListener('click', function () {
+  var err = $('introErr');
+  if (!$('nome').value.trim()) { err.textContent = 'Preencha o nome.'; err.hidden = false; $('nome').focus(); return; }
+  if (!$('consultor').value.trim()) { err.textContent = 'Preencha o nome do consultor.'; err.hidden = false; $('consultor').focus(); return; }
+  err.hidden = true;
+  try { localStorage.setItem('mavi_q2_consultor', $('consultor').value.trim()); } catch (e) {}
+  ans = {}; txt = {}; cur = 0; show('s-q'); render();
+});
+$('next').addEventListener('click', advance);
+$('txt').addEventListener('keydown', function (e) { if (e.key === 'Enter') advance(); });
+$('back').addEventListener('click', function () {
+  var q = QUESTIONS[cur]; if (needsText(q)) txt[q.id] = $('txt').value.trim();
+  if (cur > 0) { cur--; render(); }
+});
+$('again').addEventListener('click', function () {
+  ans = {}; txt = {}; cur = 0;
+  ['nome', 'cidade', 'local', 'whats'].forEach(function (id) { $(id).value = ''; });
+  $('okContato').checked = false; $('copy').textContent = 'Copiar resumo'; show('s-intro');
+});
 $('copy').addEventListener('click', function () {
-  var txt = $('summary').textContent, btn = $('copy');
+  var t = $('summary').textContent, btn = $('copy');
   function ok() { btn.textContent = 'Copiado'; }
   function fallback() {
     var rng = document.createRange(); rng.selectNodeContents($('summary'));
-    var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(rng);
+    var s = window.getSelection(); s.removeAllRanges(); s.addRange(rng);
     btn.textContent = 'Selecionado: copie manualmente';
   }
-  try { navigator.clipboard.writeText(txt).then(ok, fallback); } catch (e) { fallback(); }
+  try { navigator.clipboard.writeText(t).then(ok, fallback); } catch (e) { fallback(); }
 });
 </script>
 </body>
