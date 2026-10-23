@@ -569,7 +569,7 @@
   }
 
   /* ================= Triagens salvas no celular ================= */
-  #savedArea { position: fixed; inset: 0; z-index: 70; overflow-y: auto; background: var(--cream); color: var(--ink); display: none; }
+  #savedArea { position: fixed; inset: 0; z-index: 9990; overflow-y: auto; background: var(--cream); color: var(--ink); display: none; }
   #savedArea.open { display: block; }
   .sv-top { position: sticky; top: 0; z-index: 3; display: flex; align-items: center; justify-content: space-between; gap: 10px; background: var(--green); color: #fff; padding: 12px 16px; }
   .sv-top h2 { font-size: 15px; margin: 0; font-weight: 700; }
@@ -784,7 +784,7 @@
 
 <div class="toolbar">
   <button class="clear-link" id="adminBtn" type="button">🔒 Área restrita</button>
-  <button class="clear-link" id="savedBtn" type="button">📋 Triagens salvas</button>
+  <button class="clear-link" id="savedBtn" type="button" hidden>📋 Triagens salvas</button>
   <button class="clear-link" id="clearBtn" type="button">🗑️ Limpar formulário</button>
 </div>
 
@@ -2731,6 +2731,32 @@ function buildCrmPDF() {
 }
 
 
+// PDF do Questionário 2 (exames e cuidados com o coração), gerado a partir do registro salvo.
+function buildQ2PDF(name, p) {
+  const { dateStr, timeStr } = pdfMeta();
+  let when = dateStr + ' às ' + timeStr;
+  try { const d = new Date(p.createdAt); when = d.toLocaleDateString('pt-BR') + ' às ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }); } catch (e) {}
+  const pdf = newMaviPdf(), flow = new PdfFlow(pdf);
+  pdfHeader(pdf, flow, 'Exames e Cuidados com o Coração', dateStr, timeStr);
+  pdfMetaBox(pdf, flow, [
+    ['Nome', name || 'Não informado'],
+    ['Município', p.municipio || 'Não informado'],
+    ['Data/hora do preenchimento', when],
+    ['Código de referência', String(p.id || '').slice(0, 8).toUpperCase()],
+  ]);
+  pdfSection(pdf, flow, 'Respostas');
+  const Q = (typeof Q2_DEF !== 'undefined') ? Q2_DEF : [];
+  Q.forEach(([title, opts], qi) => {
+    const v = p.q2 && p.q2[qi] !== undefined && p.q2[qi] !== null ? opts[p.q2[qi]] : 'Não respondido';
+    flow.para((qi + 1) + '. ' + title, { font: 'F2', size: 10, color: PDF_C.green });
+    flow.para(v || 'Não respondido', { size: 10, indent: 14 });
+    flow.gap(8);
+  });
+  pdfDisclaimer(pdf, flow, 'Questionário de relacionamento MAVI. Não é documento clínico nem diagnóstico. Para avaliar o risco do coração, faça a Triagem de Saúde do Coração.');
+  pdfFooters(pdf, `MAVI Assistência à Saúde — questionário de exames e cuidados com o coração. Gerado em ${dateStr} às ${timeStr}.`);
+  return pdf.output();
+}
+
 function setPdfStatus(container, text, isError) {
   container.innerHTML = `<div class="pdf-status ${isError ? 'err' : ''}">${text}</div>`;
 }
@@ -3396,7 +3422,7 @@ async function renderSaved(note) {
     return `<div class="sv-item">
       <div class="sv-main"><strong>${escapeHtml(i.name || 'Sem nome')}</strong><span>${escapeHtml(risk)}</span><span>${escapeHtml(fmt(i.createdAt))}</span></div>
       <span class="sv-chip ${i.synced ? 'ok' : 'wait'}">${i.synced ? 'Enviada' : 'Pendente'}</span>
-      <div class="sv-pdfs">${pdfIds.has(i.id + ':risk') ? `<button type="button" data-pdf="${i.id}:risk">📄 PDF da triagem</button>` : ''}${pdfIds.has(i.id + ':crm') ? `<button type="button" data-pdf="${i.id}:crm">🗂️ PDF da ficha</button>` : ''}</div>
+      <div class="sv-pdfs">${i.p.kind === 'q2' ? `<button type="button" data-q2pdf="${i.id}">📄 PDF — Exames e coração</button>` : ''}${pdfIds.has(i.id + ':risk') ? `<button type="button" data-pdf="${i.id}:risk">📄 PDF da triagem</button>` : ''}${pdfIds.has(i.id + ':crm') ? `<button type="button" data-pdf="${i.id}:crm">🗂️ PDF da ficha</button>` : ''}</div>
     </div>`;
   }).join('');
   savedArea.innerHTML = `
@@ -3417,7 +3443,16 @@ async function renderSaved(note) {
       if (msg) msg.textContent = 'PDF pronto.';
     } catch (e) { if (msg) msg.textContent = (e && e.code === 'declined') ? 'Cancelado.' : 'Não foi possível abrir o PDF.'; }
   }));
-  document.getElementById('svClose').addEventListener('click', () => { savedArea.classList.remove('open'); document.body.classList.remove('admin-open'); savedArea.innerHTML = ''; });
+  savedArea.querySelectorAll('[data-q2pdf]').forEach(b => b.addEventListener('click', async () => {
+    const msg = document.getElementById('svMsg');
+    const it = items.find(x => x.id === b.getAttribute('data-q2pdf'));
+    if (!it) return;
+    try {
+      await deliverPdf(buildQ2PDF(it.name, it.p), `MAVI_Exames_Coracao_${String(it.createdAt).slice(0, 10)}_${it.id.slice(0, 6)}.pdf`);
+      if (msg) msg.textContent = 'PDF pronto.';
+    } catch (e) { if (msg) msg.textContent = (e && e.code === 'declined') ? 'Cancelado.' : 'Não foi possível gerar o PDF.'; }
+  }));
+  document.getElementById('svClose').addEventListener('click', () => { savedArea.classList.remove('open'); if (!adminArea.classList.contains('open')) document.body.classList.remove('admin-open'); savedArea.innerHTML = ''; });
   const sync = document.getElementById('svSync');
   if (sync) sync.addEventListener('click', async () => {
     sync.disabled = true; sync.textContent = 'Sincronizando…';
@@ -3430,12 +3465,13 @@ async function renderSaved(note) {
   });
 }
 
-document.getElementById('savedBtn').addEventListener('click', () => {
+function openSaved() {
   savedArea.classList.add('open');
   document.body.classList.add('admin-open');
   savedArea.scrollTop = 0;
   renderSaved();
-});
+}
+document.getElementById('savedBtn').addEventListener('click', openSaved);
 setTimeout(refreshSavedBadge, 300);
 
 
@@ -3897,6 +3933,7 @@ function lockAdmin() {
 
 function closeAdmin() {
   lockAdmin();
+  savedArea.classList.remove('open'); savedArea.innerHTML = '';
   adminArea.classList.remove('open');
   document.body.classList.remove('admin-open');
   adminArea.innerHTML = '';
@@ -5349,6 +5386,7 @@ function renderDashboard() {
 
   adminArea.innerHTML = admShell(`
     <h2 class="pnl-title">Painel de Análises e Triagem</h2>
+    <button class="adm-btn" id="admSavedBtn" type="button" style="margin:0 0 12px">📋 Triagens salvas neste celular</button>
     <p class="pnl-sub">${fmtInt(total)} questionário${total === 1 ? '' : 's'} no filtro atual.</p>
     ${filters}
     ${overviewHTML(recs)}
@@ -5397,6 +5435,7 @@ function renderDashboard() {
 
   bindAdmClose();
   document.getElementById('admPdfBtn').addEventListener('click', exportDashboardPDF);
+  document.getElementById('admSavedBtn').addEventListener('click', () => { bumpAdminIdle(); openSaved(); });
   const rerender = () => { const y = adminArea.scrollTop; renderDashboard(); adminArea.scrollTop = y; };
   [['ctRisk', 'risk'], ['ctInterest', 'interest'], ['ctMode', 'mode']].forEach(([id, key]) => {
     document.getElementById(id).addEventListener('change', e => { adminContactFilters[key] = e.target.value; adminContactFilters.limit = 30; rerender(); });
