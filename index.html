@@ -2969,6 +2969,7 @@ let currentRecordId = null;
 let currentRecordCreatedAt = null;
 let adminPrivKey = null;
 let adminRecords = [];
+let adminQ2 = [];
 let adminUnreadable = 0;
 let adminIdleTimer = null;
 let adminFailedTries = 0;
@@ -3391,7 +3392,7 @@ async function renderSaved(note) {
   const pend = items.filter(i => !i.synced).length;
   const fmt = d => { try { return new Date(d).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }); } catch (e) { return ''; } };
   const rows = items.map(i => {
-    const risk = i.p.alert ? 'Sinal de alerta' : (i.p.riskLabel || '') + ' · ' + i.p.score + ' pts';
+    const risk = i.p.kind === 'q2' ? 'Questionário 2' : i.p.alert ? 'Sinal de alerta' : (i.p.riskLabel || '') + ' · ' + i.p.score + ' pts';
     return `<div class="sv-item">
       <div class="sv-main"><strong>${escapeHtml(i.name || 'Sem nome')}</strong><span>${escapeHtml(risk)}</span><span>${escapeHtml(fmt(i.createdAt))}</span></div>
       <span class="sv-chip ${i.synced ? 'ok' : 'wait'}">${i.synced ? 'Enviada' : 'Pendente'}</span>
@@ -3840,7 +3841,8 @@ async function cloudLoadRecords(cloud) {
   }
   const out = await Promise.all(raws.map(r => decryptRecord(adminPrivKey, r).catch(() => null)));
   adminRecords = out.filter(Boolean).filter(r => r.createdAt && r.ans && typeof r.ans === 'object');
-  adminUnreadable = raws.length - adminRecords.length + cloudBadRecs;
+  adminQ2 = dedupeRecords(out.filter(r => r && r.kind === 'q2' && Array.isArray(r.q2)));
+  adminUnreadable = raws.length - adminRecords.length - adminQ2.length + cloudBadRecs;
   adminRecords = dedupeRecords(adminRecords);
   adminSenders = senders.size;
   adminCloudMode = true;
@@ -3888,6 +3890,7 @@ function lockAdmin() {
   adminPdfs = [];
   adminPrivKey = null;
   adminRecords = [];
+  adminQ2 = [];
   adminUnreadable = 0;
   clearTimeout(adminIdleTimer);
 }
@@ -4034,10 +4037,49 @@ async function loadAdminRecords() {
   const raw = await idb('records', 'readonly', s => s.getAll());
   const out = await Promise.all((raw || []).map(r => decryptRecord(adminPrivKey, r).catch(() => null)));
   adminRecords = out.filter(Boolean).filter(r => r.createdAt && r.ans && typeof r.ans === 'object');
-  adminUnreadable = (raw || []).length - adminRecords.length;
+  adminQ2 = dedupeRecords(out.filter(r => r && r.kind === 'q2' && Array.isArray(r.q2)));
+  adminUnreadable = (raw || []).length - adminRecords.length - adminQ2.length;
   adminRecords = dedupeRecords(adminRecords);
   await loadAdminPdfMeta();
   bumpAdminIdle();
+}
+
+
+// ---------------- Questionário 2 (exames, família, plano, valor do exame) ----------------
+const Q2_DEF = [
+  ['Quanto tempo faz que fez algum exame', ['Menos de 6 meses', 'Entre 6 meses e 1 ano', 'Entre 1 e 2 anos', 'Mais de 2 anos', 'Nunca fiz / não lembro']],
+  ['Família com pressão alta ou problema do coração', ['Sim, pai, mãe ou irmãos', 'Sim, outros parentes', 'Não', 'Não sei']],
+  ['Tem plano assistencial', ['Plano de saúde', 'Funerário ou assistencial', 'Cartão de desconto', 'Não tem nenhum']],
+  ['Teria um segundo plano com desconto grande', ['Sim, teria', 'Talvez, depende do valor', 'Não teria']],
+  ['Sabe o valor de um exame de coração', ['Sim, sabe', 'Tem uma ideia', 'Não faz ideia']]
+];
+function q2HTML() {
+  const days = { '7': 7, '30': 30, '90': 90, '365': 365 }[adminFilters.period];
+  const now = Date.now();
+  const list = adminQ2.filter(r => {
+    if (days && now - Date.parse(r.createdAt) > days * 864e5) return false;
+    if (adminFilters.city === '__none' && r.municipio) return false;
+    if (adminFilters.city && adminFilters.city !== '__none' && r.municipio !== adminFilters.city) return false;
+    return true;
+  });
+  const n = list.length;
+  const blocks = Q2_DEF.map(([title, opts], qi) => {
+    const counts = opts.map((_, oi) => list.filter(r => r.q2[qi] === oi).length);
+    const rows = opts.map((o, oi) => {
+      const pct = n ? Math.round(counts[oi] / n * 100) : 0;
+      return `<div style="margin:6px 0">
+        <div style="display:flex;justify-content:space-between;gap:8px;font-size:14px"><span>${escapeHtml(o)}</span><strong>${fmtInt(counts[oi])} · ${pct}%</strong></div>
+        <div style="height:8px;background:rgba(127,127,127,.18);border-radius:99px;overflow:hidden"><div style="height:100%;width:${pct}%;background:var(--blue);border-radius:99px"></div></div>
+      </div>`;
+    }).join('');
+    return `<div style="margin-top:14px"><strong>${qi + 1}. ${escapeHtml(title)}</strong>${rows}</div>`;
+  }).join('');
+  const ageNote = adminFilters.age !== '' ? ' O filtro de faixa etária não se aplica a este questionário.' : '';
+  return `<section class="adm-card">
+      <h3>🫀 Questionário 2 — Exames e plano</h3>
+      <p class="adm-sub">${fmtInt(n)} resposta(s) no período e município escolhidos.${ageNote}</p>
+      ${n ? blocks : '<p class="adm-sub">Nenhuma resposta ainda.</p>'}
+    </section>`;
 }
 
 // ---------------- Agregações ----------------
@@ -5315,6 +5357,7 @@ function renderDashboard() {
     ${kanbanHTML(recs)}
     ${flowHTML(recs)}
     ${examAdminHTML(recs)}
+    ${q2HTML()}
     ${contactsHTML(recs)}
     ${pdfListHTML(recs)}
     <section class="adm-card">
@@ -5442,7 +5485,7 @@ function renderDashboard() {
     if (document.getElementById('admWipeTxt').value.trim().toUpperCase() !== 'APAGAR') return;
     const cloud = await getCloud();
     if (cloud) await cloudWipe(cloud); else { await idb('records', 'readwrite', s => s.clear()); await idb('imported', 'readwrite', s => s.clear()); }
-    adminRecords = []; adminUnreadable = 0; adminPdfs = [];
+    adminRecords = []; adminQ2 = []; adminUnreadable = 0; adminPdfs = [];
     renderDashboard();
   });
   bumpAdminIdle();

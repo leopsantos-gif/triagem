@@ -79,6 +79,10 @@
     <label class="field" for="nome">Nome (opcional)
       <input id="nome" type="text" autocomplete="off" placeholder="Nome da pessoa">
     </label>
+    <label class="field" for="cidade">Município
+      <input id="cidade" type="text" list="munis" autocomplete="off" maxlength="60" placeholder="Digite o município (opcional)">
+    </label>
+    <datalist id="munis"><option value="Custódia-PE"><option value="Triunfo-PE"><option value="Fátima (Flores)-PE"><option value="Tavares-PB"></datalist>
     <button class="btn" id="start" type="button">Começar</button>
   </section>
 
@@ -100,6 +104,7 @@
       <div class="k" style="padding-bottom:8px">Resumo para o cadastro</div>
       <div class="summary" id="summary"></div>
     </div>
+    <p class="note" id="saveMsg">Salvando…</p>
     <div class="actions">
       <button class="btn" id="copy" type="button">Copiar resumo</button>
       <button class="btn ghost" id="again" type="button">Novo questionário</button>
@@ -120,6 +125,59 @@ var QUESTIONS = [
   { k: 'Valor do exame', t: 'O(a) senhor(a) sabe o valor de um exame de coração?', o: [
     'Sim, sei quanto custa', 'Tenho uma ideia', 'Não faço ideia' ] }
 ];
+
+
+// ---- Envio para o Painel de Análises ----
+// Usa o mesmo banco do app (mesmo aparelho): a resposta fica cifrada em
+// "Triagens salvas" e é enviada à coordenação quando a Triagem abrir com internet.
+function openDb() {
+  return new Promise(function (res, rej) {
+    var req = indexedDB.open('mavi_triagem_db', 3);
+    req.onupgradeneeded = function () {
+      var db = req.result;
+      ['records', 'saved', 'pdfs', 'imported'].forEach(function (n) { if (!db.objectStoreNames.contains(n)) db.createObjectStore(n, { keyPath: 'id' }); });
+      if (!db.objectStoreNames.contains('meta')) db.createObjectStore('meta', { keyPath: 'k' });
+    };
+    req.onsuccess = function () { res(req.result); };
+    req.onerror = function () { rej(req.error); };
+  });
+}
+function idb(store, mode, op) {
+  return openDb().then(function (db) {
+    return new Promise(function (res, rej) {
+      var tx = db.transaction(store, mode); var rq = op(tx.objectStore(store));
+      tx.oncomplete = function () { db.close(); res(rq ? rq.result : undefined); };
+      tx.onerror = tx.onabort = function () { db.close(); rej(tx.error); };
+    });
+  });
+}
+async function deviceKey() {
+  var m = await idb('meta', 'readonly', function (st) { return st.get('devkey'); });
+  if (m && m.v) return m.v;
+  var k = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+  await idb('meta', 'readwrite', function (st) { return st.put({ k: 'devkey', v: k }); });
+  return k;
+}
+async function saveQ2(payload, name) {
+  var enc = new TextEncoder();
+  var key = await deviceKey();
+  var iv = crypto.getRandomValues(new Uint8Array(12));
+  var ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv, additionalData: enc.encode(payload.id) }, key,
+    enc.encode(JSON.stringify({ payload: payload, name: name || '' }))));
+  await idb('saved', 'readwrite', function (st) { return st.put({ id: payload.id, createdAt: payload.createdAt, savedAt: new Date().toISOString(), synced: 0, iv: iv, ct: ct }); });
+  // Modo deste aparelho (sem coordenação): também cifra com a chave da área restrita, se existir.
+  var adm = await idb('meta', 'readonly', function (st) { return st.get('admin'); });
+  if (adm && adm.v && adm.v.pubSpki) {
+    var pub = await crypto.subtle.importKey('spki', adm.v.pubSpki, { name: 'RSA-OAEP', hash: 'SHA-256' }, false, ['encrypt']);
+    var raw = crypto.getRandomValues(new Uint8Array(32));
+    var k2 = await crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['encrypt']);
+    var iv2 = crypto.getRandomValues(new Uint8Array(12));
+    var ct2 = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv2, additionalData: enc.encode(payload.id) }, k2, enc.encode(JSON.stringify(payload))));
+    var ek = new Uint8Array(await crypto.subtle.encrypt({ name: 'RSA-OAEP' }, pub, raw)); raw.fill(0);
+    await idb('records', 'readwrite', function (st) { return st.put({ id: payload.id, v: 1, savedAt: new Date().toISOString(), iv: iv2, ek: ek, ct: ct2 }); });
+  }
+}
+function newId() { return (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2)); }
 
 var ans = [], cur = 0;
 function $(id) { return document.getElementById(id); }
@@ -169,11 +227,18 @@ function finish() {
     'MAVI Cardio - Questionário 2 - ' + new Date().toLocaleDateString('pt-BR') + '\n' +
     'Nome: ' + (nome || 'não informado') + '\n' + lines.join('\n');
   show('s-r');
+  var msg = $('saveMsg'); msg.textContent = 'Salvando…';
+  if (!(window.indexedDB && window.crypto && crypto.subtle)) { msg.textContent = 'Este aparelho não consegue salvar. Copie o resumo.'; return; }
+  var now = new Date().toISOString();
+  saveQ2({ id: newId(), kind: 'q2', formVersion: 'q2-2026-10-v1', createdAt: now, updatedAt: now,
+    municipio: $('cidade').value.trim() || null, q2: ans.slice() }, nome)
+    .then(function () { msg.textContent = 'Salvo. Vai para o Painel de Análises quando a Triagem abrir com internet.'; },
+          function () { msg.textContent = 'Não foi possível salvar. Copie o resumo.'; });
 }
 
 $('start').addEventListener('click', function () { ans = []; cur = 0; show('s-q'); render(); });
 $('back').addEventListener('click', function () { if (cur > 0) { cur--; render(); } });
-$('again').addEventListener('click', function () { ans = []; cur = 0; $('nome').value = ''; $('copy').textContent = 'Copiar resumo'; show('s-intro'); });
+$('again').addEventListener('click', function () { ans = []; cur = 0; $('nome').value = ''; $('cidade').value = ''; $('copy').textContent = 'Copiar resumo'; show('s-intro'); });
 $('copy').addEventListener('click', function () {
   var txt = $('summary').textContent, btn = $('copy');
   function ok() { btn.textContent = 'Copiado'; }
