@@ -66,7 +66,7 @@
   [hidden] { display: none !important; }
   @media (prefers-reduced-motion: reduce) { .track span { transition: none; } }
 
-  input[type="tel"], textarea.txt { font: inherit; padding: 13px; border-radius: 8px; border: 1.5px solid var(--line); background: var(--cream); color: var(--ink); width: 100%; min-width: 0; }
+  input[type="tel"], input[type="date"], textarea.txt { font: inherit; padding: 13px; border-radius: 8px; border: 1.5px solid var(--line); background: var(--cream); color: var(--ink); width: 100%; min-width: 0; }
   .opt.sq i { border-radius: 5px; }
   .opt.sq[aria-pressed="true"] i { background: var(--green); box-shadow: inset 0 0 0 3px #fff; }
   .hint { font-size: 14px; color: var(--muted); }
@@ -87,6 +87,14 @@
     <label class="field" for="nome">Nome
       <input id="nome" type="text" autocomplete="off" maxlength="120" placeholder="Nome da pessoa">
     </label>
+    <div style="display:flex;gap:10px">
+      <label class="field" for="nasc" style="flex:1 1 60%">Data de nascimento
+        <input id="nasc" type="date" max="">
+      </label>
+      <label class="field" for="idade" style="flex:1 1 40%">Idade
+        <input id="idade" type="tel" inputmode="numeric" maxlength="3" placeholder="Anos">
+      </label>
+    </div>
     <label class="field" for="cidade">Município
       <input id="cidade" type="text" list="munis" autocomplete="off" maxlength="60" placeholder="Digite o município">
     </label>
@@ -225,6 +233,7 @@ function finish() {
   var el = $('rows'); el.innerHTML = '';
   var nome = $('nome').value.trim(), cid = $('cidade').value.trim(), loc = $('local').value.trim();
   var wa = $('whats').value.replace(/\D/g, ''), cons = $('consultor').value.trim();
+  var idade = $('idade').value.replace(/\D/g, '').slice(0, 3), nasc = $('nasc').value || '';
   var lines = [];
   QUESTIONS.forEach(function (q) {
     var v = answerText(q);
@@ -237,6 +246,7 @@ function finish() {
   $('summary').textContent =
     'MAVI Cardio - Exames e cuidados com o coração - ' + new Date().toLocaleDateString('pt-BR') + '\n' +
     'Nome: ' + (nome || 'não informado') + '\n' +
+    'Idade: ' + (idade ? idade + ' anos' : 'não informada') + (nasc ? ' (nascimento: ' + nasc.split('-').reverse().join('/') + ')' : '') + '\n' +
     'Município: ' + (cid || 'não informado') + '\n' +
     'Local: ' + (loc || 'não informado') + '\n' +
     'WhatsApp: ' + ($('whats').value.trim() || 'não informado') + '\n' +
@@ -247,7 +257,7 @@ function finish() {
   var now = new Date().toISOString();
   var q2 = {}; QUESTIONS.forEach(function (q) { q2[q.id] = q.multi ? sel(q) : (ans[q.id] === undefined ? null : ans[q.id]); });
   var payload = { id: newId(), kind: 'q2', q2v: 2, formVersion: 'q2-2026-10-v2', createdAt: now, updatedAt: now,
-    nome: nome.slice(0, 120) || null, municipio: cid || null, local: loc || null, consultor: cons || null,
+    nome: nome.slice(0, 120) || null, idade: idade ? Number(idade) : null, nasc: nasc || null, municipio: cid || null, local: loc || null, consultor: cons || null,
     consentContact: $('okContato').checked,
     contact: $('okContato').checked ? { name: nome.slice(0, 120), phone: wa.slice(0, 15) } : null,
     q2: q2, txt: Object.assign({}, txt) };
@@ -377,11 +387,22 @@ if ('serviceWorker' in navigator) { navigator.serviceWorker.register('service-wo
 $('start').addEventListener('click', function () {
   var err = $('introErr');
   if (!$('nome').value.trim()) { err.textContent = 'Preencha o nome.'; err.hidden = false; $('nome').focus(); return; }
+  var ia = Number($('idade').value.replace(/\D/g, ''));
+  if ($('idade').value.trim() && (!ia || ia > 120)) { err.textContent = 'Confira a idade.'; err.hidden = false; $('idade').focus(); return; }
   if (!$('consultor').value.trim()) { err.textContent = 'Preencha o nome do consultor.'; err.hidden = false; $('consultor').focus(); return; }
   err.hidden = true;
   try { localStorage.setItem('mavi_q2_consultor', $('consultor').value.trim()); } catch (e) {}
   ans = {}; txt = {}; cur = 0; show('s-q'); render();
 });
+// Data de nascimento preenche a idade automaticamente.
+function ageFrom(d) {
+  var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d || ''); if (!m) return '';
+  var t = new Date(), a = t.getFullYear() - Number(m[1]);
+  if (t.getMonth() + 1 < Number(m[2]) || (t.getMonth() + 1 === Number(m[2]) && t.getDate() < Number(m[3]))) a--;
+  return a >= 0 && a <= 120 ? String(a) : '';
+}
+try { $('nasc').max = new Date().toISOString().slice(0, 10); } catch (e) {}
+$('nasc').addEventListener('change', function () { var a = ageFrom($('nasc').value); if (a) $('idade').value = a; });
 $('next').addEventListener('click', advance);
 $('txt').addEventListener('keydown', function (e) { if (e.key === 'Enter') advance(); });
 $('back').addEventListener('click', function () {
@@ -390,7 +411,7 @@ $('back').addEventListener('click', function () {
 });
 $('again').addEventListener('click', function () {
   ans = {}; txt = {}; cur = 0;
-  ['nome', 'cidade', 'local', 'whats'].forEach(function (id) { $(id).value = ''; });
+  ['nome', 'nasc', 'idade', 'cidade', 'local', 'whats'].forEach(function (id) { $(id).value = ''; });
   $('okContato').checked = false; $('copy').textContent = 'Copiar resumo'; show('s-intro');
 });
 $('copy').addEventListener('click', function () {

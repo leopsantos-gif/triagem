@@ -2740,6 +2740,7 @@ function buildQ2PDF(name, p) {
   pdfHeader(pdf, flow, 'Exames e Cuidados com o Coração', dateStr, timeStr);
   pdfMetaBox(pdf, flow, [
     ['Nome', name || 'Não informado'],
+    ['Idade', p.idade ? p.idade + ' anos' + (p.nasc ? ' (nascimento: ' + p.nasc.split('-').reverse().join('/') + ')' : '') : 'Não informada'],
     ['Município', p.municipio || 'Não informado'],
     ['Local', p.local || 'Não informado'],
     ['WhatsApp', (p.contact && p.contact.phone) || 'Não informado'],
@@ -2997,6 +2998,8 @@ let currentRecordCreatedAt = null;
 let adminPrivKey = null;
 let adminRecords = [];
 let adminQ2 = [];
+let adminLocalIds = new Set();
+const q2Filters = { origin: 'all', age: '' };
 let adminUnreadable = 0;
 let adminIdleTimer = null;
 let adminFailedTries = 0;
@@ -3425,7 +3428,7 @@ async function renderSaved(note) {
   const q2Name = r => r.nome || (r.contact && r.contact.name) || 'Sem nome';
   const remoteHTML = adminPrivKey ? `<h3 id="svRemote" style="margin:22px 0 8px">🫀 Exames e coração recebidos de outros celulares (${remote.length})</h3>
       ${remote.map(r => `<div class="sv-item">
-        <div class="sv-main"><strong>${escapeHtml(q2Name(r))}</strong><span>${escapeHtml(['Exames e coração', r.consultor ? 'Consultor: ' + r.consultor : '', r.municipio, r.local].filter(Boolean).join(' · '))}</span><span>${escapeHtml(fmt(r.createdAt))}</span></div>
+        <div class="sv-main"><strong>${escapeHtml(q2Name(r))}</strong><span>${escapeHtml(['Exames e coração', r.idade ? r.idade + ' anos' : '', r.consultor ? 'Consultor: ' + r.consultor : '', r.municipio, r.local].filter(Boolean).join(' · '))}</span><span>${escapeHtml(fmt(r.createdAt))}</span></div>
         <span class="sv-chip ok">Recebida</span>
         <div class="sv-pdfs"><button type="button" data-q2rpdf="${escapeHtml(r.id)}">📄 PDF — Exames e coração</button></div>
       </div>`).join('') || '<div class="sv-note">Nenhum recebido ainda.</div>'}` : '';
@@ -4092,6 +4095,7 @@ function renderLogin(msg) {
 }
 
 async function loadAdminRecords() {
+  try { adminLocalIds = new Set((await idb('saved', 'readonly', s => s.getAllKeys())) || []); } catch (e) { adminLocalIds = new Set(); }
   const cloud = await getCloud();
   if (cloud) { await cloudLoadRecords(cloud); await loadAdminPdfMeta(); bumpAdminIdle(); return; }
   const raw = await idb('records', 'readonly', s => s.getAll());
@@ -4123,6 +4127,12 @@ const Q2_V2 = [
   { id: 'saude', k: 'Tem algum problema de saúde', multi: true, o: ['Pressão alta ou coração', 'Diabetes', 'Ortopédico', 'Psiquiátrico', 'Neurológico', 'Outro', 'Nenhum'], text: 'Outro problema' },
   { id: 'tele', k: 'Faria consulta por telemedicina', o: ['Sim', 'Talvez', 'Não'] }
 ];
+const Q2_AGES = ['Menos de 40 anos', '40 a 49 anos', '50 a 59 anos', '60 a 69 anos', '70 anos ou mais'];
+function q2AgeIdx(r) {
+  const a = Number(r && r.idade);
+  if (!Number.isFinite(a) || a <= 0 || a > 120) return -1;
+  return a < 40 ? 0 : a < 50 ? 1 : a < 60 ? 2 : a < 70 ? 3 : 4;
+}
 function q2IsV2(p) { return p && p.q2v === 2 && p.q2 && !Array.isArray(p.q2); }
 // Lista [pergunta, resposta] para PDF e telas, nas duas versões.
 function q2Answers(p) {
@@ -4148,6 +4158,9 @@ function q2HTML() {
     if (days && now - Date.parse(r.createdAt) > days * 864e5) return false;
     if (adminFilters.city === '__none' && r.municipio) return false;
     if (adminFilters.city && adminFilters.city !== '__none' && r.municipio !== adminFilters.city) return false;
+    if (q2Filters.origin === 'remote' && adminLocalIds.has(r.id)) return false;
+    if (q2Filters.origin === 'local' && !adminLocalIds.has(r.id)) return false;
+    if (q2Filters.age !== '' && String(q2AgeIdx(r)) !== q2Filters.age) return false;
     return true;
   });
   const list = inFilter.filter(q2IsV2);
@@ -4167,6 +4180,9 @@ function q2HTML() {
     }).join('');
     return `<div style="margin-top:14px"><strong>${qi + 1}. ${escapeHtml(q.k)}</strong>${q.multi ? ' <span class="adm-sub">(pode marcar mais de uma)</span>' : ''}${rows}</div>`;
   }).join('');
+  const ageCounts = Q2_AGES.map((_, i) => list.filter(r => q2AgeIdx(r) === i).length);
+  const noAge = list.filter(r => q2AgeIdx(r) < 0).length;
+  const ageHTML = Q2_AGES.map((a, i) => bar(a, ageCounts[i], n)).join('') + (noAge ? bar('Idade não informada', noAge, n) : '');
   const cons = {};
   list.forEach(r => { const c = (r.consultor || 'Não informado').trim(); cons[c] = (cons[c] || 0) + 1; });
   const consHTML = Object.keys(cons).sort((a, b) => cons[b] - cons[a]).map(c => bar(c, cons[c], n)).join('');
@@ -4178,14 +4194,21 @@ function q2HTML() {
       <span class="ct-phone">Indicado por ${escapeHtml(who)}${ph ? ' · ' + escapeHtml(ph) : ''}</span>
       <span class="ct-tags"><span class="ct-tag">${escapeHtml([fmtDT(r.createdAt), r.municipio, r.local, r.consultor ? 'Consultor: ' + r.consultor : ''].filter(Boolean).join(' · '))}</span></span></div></div>`;
   }).join('');
-  const ageNote = adminFilters.age !== '' ? ' O filtro de faixa etária não se aplica a este questionário.' : '';
+  const ageNote = adminFilters.age !== '' ? ' A faixa etária do topo não se aplica aqui; use o filtro deste bloco.' : '';
+  const o = (v, cur, t) => `<option value="${v}" ${v === cur ? 'selected' : ''}>${t}</option>`;
+  const q2Filt = `<div class="adm-filters" style="margin:10px 0 4px;display:flex;gap:10px;flex-wrap:wrap">
+      <label>Origem<br><select id="q2fOrigin">${o('all', q2Filters.origin, 'Todos os celulares')}${o('remote', q2Filters.origin, 'Só recebidos de outros celulares')}${o('local', q2Filters.origin, 'Só deste celular')}</select></label>
+      <label>Faixa etária<br><select id="q2fAge">${o('', q2Filters.age, 'Todas')}${Q2_AGES.map((a, i) => o(String(i), q2Filters.age, a)).join('')}</select></label>
+    </div>`;
   const oldNote = old ? ` ${fmtInt(old)} resposta(s) da versão anterior não entram nestes números (o PDF delas continua em Triagens salvas).` : '';
   return `<section class="adm-card">
       <h3>🫀 Exames e cuidados com o coração</h3>
       <p class="adm-sub">${fmtInt(n)} resposta(s) no período e município escolhidos.${ageNote}${oldNote}</p>
       <button class="adm-btn" type="button" id="q2Share" style="margin-top:0">📤 Enviar este questionário a um consultor</button>
       <p class="adm-sub" style="margin:6px 0 0">Abre o WhatsApp com o link só deste bloco de perguntas. O consultor não vê a Triagem nem a área restrita.</p>
-      ${n ? blocks : '<p class="adm-sub">Nenhuma resposta ainda.</p>'}
+      ${q2Filt}
+      ${n ? `<div style="margin-top:14px"><strong>Idade</strong>${ageHTML}</div>` : ''}
+      ${n ? blocks : '<p class="adm-sub">Nenhuma resposta neste filtro.</p>'}
       ${n ? `<div style="margin-top:16px"><strong>Por consultor</strong>${consHTML}</div>` : ''}
       ${ind.length ? `<div style="margin-top:16px"><strong>Indicações (conhece alguém com problema de saúde)</strong>${indHTML}</div>` : ''}
     </section>`;
@@ -5512,6 +5535,10 @@ function renderDashboard() {
     bumpAdminIdle();
     const txt = 'Olá! Este é o questionário MAVI de exames e cuidados com o coração. Abra no celular e salve na tela inicial: ' + q2Link();
     window.open('https://wa.me/?text=' + encodeURIComponent(txt), '_blank');
+  });
+  [['q2fOrigin', 'origin'], ['q2fAge', 'age']].forEach(([id, k]) => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('change', () => { bumpAdminIdle(); q2Filters[k] = el.value; const y = adminArea.scrollTop; renderDashboard(); adminArea.scrollTop = y; });
   });
   document.getElementById('admQ2RemoteBtn').addEventListener('click', async () => {
     bumpAdminIdle(); openSaved();
