@@ -247,7 +247,7 @@ function finish() {
   var now = new Date().toISOString();
   var q2 = {}; QUESTIONS.forEach(function (q) { q2[q.id] = q.multi ? sel(q) : (ans[q.id] === undefined ? null : ans[q.id]); });
   var payload = { id: newId(), kind: 'q2', q2v: 2, formVersion: 'q2-2026-10-v2', createdAt: now, updatedAt: now,
-    municipio: cid || null, local: loc || null, consultor: cons || null,
+    nome: nome.slice(0, 120) || null, municipio: cid || null, local: loc || null, consultor: cons || null,
     consentContact: $('okContato').checked,
     contact: $('okContato').checked ? { name: nome.slice(0, 120), phone: wa.slice(0, 15) } : null,
     q2: q2, txt: Object.assign({}, txt) };

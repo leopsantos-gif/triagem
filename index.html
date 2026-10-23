@@ -3418,6 +3418,17 @@ async function renderSaved(note) {
   try { pdfIds = new Set((await idb('pdfs', 'readonly', st => st.getAllKeys())) || []); } catch (e) {}
   const pend = items.filter(i => !i.synced).length;
   const fmt = d => { try { return new Date(d).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }); } catch (e) { return ''; } };
+  // Com a área restrita aberta: questionários "Exames e coração" recebidos de todos os celulares.
+  const localIds = new Set(items.map(i => i.id));
+  const remote = (adminPrivKey && Array.isArray(adminQ2) ? adminQ2 : []).filter(r => !localIds.has(r.id))
+    .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+  const q2Name = r => r.nome || (r.contact && r.contact.name) || 'Sem nome';
+  const remoteHTML = adminPrivKey ? `<h3 style="margin:22px 0 8px">🫀 Exames e coração recebidos de outros celulares (${remote.length})</h3>
+      ${remote.map(r => `<div class="sv-item">
+        <div class="sv-main"><strong>${escapeHtml(q2Name(r))}</strong><span>${escapeHtml(['Exames e coração', r.consultor ? 'Consultor: ' + r.consultor : '', r.municipio, r.local].filter(Boolean).join(' · '))}</span><span>${escapeHtml(fmt(r.createdAt))}</span></div>
+        <span class="sv-chip ok">Recebida</span>
+        <div class="sv-pdfs"><button type="button" data-q2rpdf="${escapeHtml(r.id)}">📄 PDF — Exames e coração</button></div>
+      </div>`).join('') || '<div class="sv-note">Nenhum recebido ainda.</div>'}` : '';
   const rows = items.map(i => {
     const risk = i.p.kind === 'q2' ? ('Exames e coração' + (i.p.consultor ? ' · ' + i.p.consultor : '')) : i.p.alert ? 'Sinal de alerta' : (i.p.riskLabel || '') + ' · ' + i.p.score + ' pts';
     return `<div class="sv-item">
@@ -3427,12 +3438,13 @@ async function renderSaved(note) {
     </div>`;
   }).join('');
   savedArea.innerHTML = `
-    <div class="sv-top"><h2>📋 Triagens salvas neste celular</h2><button type="button" id="svClose">Fechar</button></div>
+    <div class="sv-top"><h2>📋 Triagens salvas</h2><button type="button" id="svClose">Fechar</button></div>
     <div class="sv-wrap">
       <div class="sv-sum"><strong>${items.length}</strong> no aparelho · <strong>${pend}</strong> pendente${pend === 1 ? '' : 's'} de envio</div>
       ${cloud ? `<button class="sv-sync" id="svSync" type="button">Sincronizar agora</button>` : `<div class="sv-note">Sem conexão com a coordenação no momento. As triagens continuam guardadas aqui e serão enviadas quando a internet voltar.</div>`}
       <div class="sv-note" id="svMsg">${note ? escapeHtml(note) : ''}</div>
-      ${rows || '<div class="sv-note">Nenhuma triagem salva ainda.</div>'}
+      ${rows || '<div class="sv-note">Nenhuma triagem salva neste celular.</div>'}
+      ${remoteHTML}
     </div>`;
   savedArea.querySelectorAll('[data-pdf]').forEach(b => b.addEventListener('click', async () => {
     const id = b.getAttribute('data-pdf'); const msg = document.getElementById('svMsg');
@@ -3443,6 +3455,15 @@ async function renderSaved(note) {
       await deliverPdf(bytes, `MAVI_${id.endsWith(':crm') ? 'Ficha' : 'Triagem'}_${day}_${id.slice(0, 6)}.pdf`);
       if (msg) msg.textContent = 'PDF pronto.';
     } catch (e) { if (msg) msg.textContent = (e && e.code === 'declined') ? 'Cancelado.' : 'Não foi possível abrir o PDF.'; }
+  }));
+  savedArea.querySelectorAll('[data-q2rpdf]').forEach(b => b.addEventListener('click', async () => {
+    const msg = document.getElementById('svMsg');
+    const r = remote.find(x => x.id === b.getAttribute('data-q2rpdf'));
+    if (!r) return;
+    try {
+      await deliverPdf(buildQ2PDF(q2Name(r), r), `MAVI_Exames_Coracao_${String(r.createdAt).slice(0, 10)}_${r.id.slice(0, 6)}.pdf`);
+      if (msg) msg.textContent = 'PDF pronto.';
+    } catch (e) { if (msg) msg.textContent = (e && e.code === 'declined') ? 'Cancelado.' : 'Não foi possível gerar o PDF.'; }
   }));
   savedArea.querySelectorAll('[data-q2pdf]').forEach(b => b.addEventListener('click', async () => {
     const msg = document.getElementById('svMsg');
@@ -3460,6 +3481,7 @@ async function renderSaved(note) {
     lastSyncErr = null;
     let n = 0;
     try { n = await cloudFlushOutbox(); } catch (e) {}
+    if (adminPrivKey) { try { await loadAdminRecords(); } catch (e) {} }
     await refreshSavedBadge();
     const left = (await localAll()).filter(i => !i.synced).length;
     renderSaved(left ? (lastSyncErr === 'invalid_argument' ? 'Seu acesso não permite enviar. Peça à coordenação o convite com permissão "Pode editar".' : 'Ainda há triagens pendentes. Confira a internet e tente de novo.') : 'Tudo sincronizado.');
@@ -5490,7 +5512,10 @@ function renderDashboard() {
     const txt = 'Olá! Este é o questionário MAVI de exames e cuidados com o coração. Abra no celular e salve na tela inicial: ' + q2Link();
     window.open('https://wa.me/?text=' + encodeURIComponent(txt), '_blank');
   });
-  document.getElementById('admSavedBtn').addEventListener('click', () => { bumpAdminIdle(); openSaved(); });
+  document.getElementById('admSavedBtn').addEventListener('click', async () => {
+    bumpAdminIdle(); openSaved();
+    try { await loadAdminRecords(); renderSaved(); renderDashboard(); } catch (e) {}
+  });
   const rerender = () => { const y = adminArea.scrollTop; renderDashboard(); adminArea.scrollTop = y; };
   [['ctRisk', 'risk'], ['ctInterest', 'interest'], ['ctMode', 'mode']].forEach(([id, key]) => {
     document.getElementById(id).addEventListener('change', e => { adminContactFilters[key] = e.target.value; adminContactFilters.limit = 30; rerender(); });
