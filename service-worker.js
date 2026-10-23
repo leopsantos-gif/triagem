@@ -1,10 +1,11 @@
 // Service Worker — MAVI Triagem Cardiovascular e Histórico de Saúde
 // - Páginas (HTML): busca primeiro a versão nova na rede; sem internet, usa a cópia guardada.
 //   Assim o app instalado recebe atualizações e continua funcionando offline.
+// - 'no-cache' faz o celular sempre conferir no servidor, sem usar cópia velha do navegador.
 // - Demais arquivos (ícones, manifest): usa a cópia guardada primeiro.
 // - Nenhum dado de questionário passa por aqui: os registros ficam no IndexedDB do aparelho.
 
-const CACHE_NAME = 'mavi-triagem-v20';
+const CACHE_NAME = 'mavi-triagem-v21';
 const ASSETS = ['./', './index.html', './questionario.html', './roteiro.html', './questionario2.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', (event) => {
@@ -25,7 +26,7 @@ self.addEventListener('fetch', (event) => {
   const isPage = req.mode === 'navigate' || (req.headers.get('accept') || '').includes('text/html');
   if (isPage) {
     event.respondWith(
-      fetch(req)
+      fetch(req, { cache: 'no-cache' })
         .then((res) => {
           const copy = res.clone();
           caches.open(CACHE_NAME).then((c) => c.put(req, copy));
