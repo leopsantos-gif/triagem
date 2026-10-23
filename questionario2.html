@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2F5D4F">
+<title>MAVI Cardio — Questionário 2</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<style>
+  :root {
+    --ochre: #B5732A;
+    --green: #2F5D4F;
+    --green-light: #EAF1EE;
+    --cream: #FBF6EE;
+    --ink: #2A241C;
+    --muted: #6B6156;
+    --line: #E3D8C4;
+    --amber-soft: #FBEBD0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--cream); color: var(--ink);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; font-size: 17px; line-height: 1.5;
+    padding-bottom: calc(32px + env(safe-area-inset-bottom, 0px));
+  }
+  header {
+    background: var(--green); color: #fff;
+    padding: calc(14px + env(safe-area-inset-top, 0px)) 16px 14px;
+  }
+  .bar-in { max-width: 560px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  header b { font-family: Georgia, 'Times New Roman', serif; font-size: 20px; letter-spacing: 0.06em; }
+  header a { color: #fff; font-size: 14px; text-decoration: none; border: 1px solid rgba(255,255,255,.5); border-radius: 20px; padding: 6px 12px; }
+  main { max-width: 560px; margin: 0 auto; padding: 18px 16px 0; display: flex; flex-direction: column; gap: 16px; }
+  h1, h2 { font-family: Georgia, 'Times New Roman', serif; line-height: 1.2; margin: 0; color: var(--green); }
+  h1 { font-size: 27px; }
+  h2 { font-size: 24px; }
+  p { margin: 0; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 20px 18px; display: flex; flex-direction: column; gap: 16px; }
+  .lead { color: var(--muted); }
+  label.field { display: flex; flex-direction: column; gap: 6px; font-weight: 600; font-size: 15px; }
+  input[type="text"] { font: inherit; padding: 13px; border-radius: 8px; border: 1.5px solid var(--line); background: var(--cream); color: var(--ink); width: 100%; min-width: 0; }
+  input:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid var(--ochre); outline-offset: 2px; }
+  .btn { font: inherit; font-weight: 600; border: 0; border-radius: 10px; padding: 15px 18px; min-height: 52px; cursor: pointer; background: var(--green); color: #fff; }
+  .btn.ghost { background: #fff; color: var(--green); border: 1.5px solid var(--green); }
+  .btn.small { min-height: 44px; padding: 9px 16px; font-size: 15px; }
+  .top { display: flex; flex-direction: column; gap: 8px; }
+  .top-row { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; color: var(--muted); }
+  .track { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; }
+  .track span { display: block; height: 100%; background: var(--ochre); border-radius: 99px; transition: width .25s ease; }
+  .opts { display: flex; flex-direction: column; gap: 10px; }
+  .opt { font: inherit; text-align: left; min-height: 58px; padding: 14px 16px; border: 1.5px solid var(--line); border-radius: 10px; background: var(--cream); color: var(--ink); cursor: pointer; display: flex; gap: 12px; align-items: center; }
+  .opt i { flex: none; width: 22px; height: 22px; border: 2px solid var(--muted); border-radius: 50%; }
+  .opt[aria-pressed="true"] { border-color: var(--green); background: var(--green-light); }
+  .opt[aria-pressed="true"] i { border-color: var(--green); background: radial-gradient(circle, var(--green) 0 45%, transparent 50%); }
+  .pill { align-self: flex-start; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; background: var(--green-light); color: var(--green); padding: 5px 10px; border-radius: 99px; }
+  .rows { border-top: 1px solid var(--line); }
+  .row { padding: 13px 0; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 3px; }
+  .k { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  .v { font-weight: 700; }
+  .d { color: var(--muted); font-size: 15.5px; }
+  .summary { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 14px; white-space: pre-wrap; background: var(--cream); border: 1px solid var(--line); border-radius: 8px; padding: 12px; overflow-wrap: anywhere; user-select: all; }
+  .note { background: var(--amber-soft); border-radius: 8px; padding: 11px 13px; font-size: 14.5px; }
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .actions .btn { flex: 1 1 150px; }
+  [hidden] { display: none !important; }
+  @media (prefers-reduced-motion: reduce) { .track span { transition: none; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="bar-in"><b>MAVI CARDIO</b><a href="index.html">← Triagem</a></div>
+</header>
+
+<main>
+  <section id="s-intro" class="card">
+    <h1>Exames e cuidado do coração</h1>
+    <p class="lead">São 5 perguntas rápidas. Leva menos de 1 minuto.</p>
+    <label class="field" for="nome">Nome (opcional)
+      <input id="nome" type="text" autocomplete="off" placeholder="Nome da pessoa">
+    </label>
+    <button class="btn" id="start" type="button">Começar</button>
+  </section>
+
+  <section id="s-q" class="card" hidden>
+    <div class="top">
+      <div class="top-row"><span id="part"></span><span id="count"></span></div>
+      <div class="track"><span id="fill"></span></div>
+    </div>
+    <h2 id="qtitle"></h2>
+    <div class="opts" id="opts"></div>
+    <div><button class="btn ghost small" id="back" type="button">Voltar</button></div>
+  </section>
+
+  <section id="s-r" class="card" hidden>
+    <span class="pill">Questionário 2</span>
+    <h2>Respostas</h2>
+    <div class="rows" id="rows"></div>
+    <div>
+      <div class="k" style="padding-bottom:8px">Resumo para o cadastro</div>
+      <div class="summary" id="summary"></div>
+    </div>
+    <div class="actions">
+      <button class="btn" id="copy" type="button">Copiar resumo</button>
+      <button class="btn ghost" id="again" type="button">Novo questionário</button>
+    </div>
+  </section>
+</main>
+
+<script>
+var QUESTIONS = [
+  { k: 'Último exame', t: 'Quanto tempo faz que o(a) senhor(a) fez algum exame?', o: [
+    'Menos de 6 meses', 'Entre 6 meses e 1 ano', 'Entre 1 e 2 anos', 'Mais de 2 anos', 'Nunca fiz / não lembro' ] },
+  { k: 'Família', t: 'Tem alguém na família com pressão alta ou problema do coração?', o: [
+    'Sim, pai, mãe ou irmãos', 'Sim, outros parentes (avós, tios)', 'Não', 'Não sei' ] },
+  { k: 'Plano atual', t: 'O(a) senhor(a) tem algum plano assistencial?', o: [
+    'Plano de saúde', 'Plano funerário ou assistencial', 'Cartão de desconto', 'Não tenho nenhum' ] },
+  { k: 'Segundo plano', t: 'E se o(a) senhor(a) tivesse um segundo plano que desse um desconto grande?', o: [
+    'Sim, teria', 'Talvez, depende do valor', 'Não teria' ] },
+  { k: 'Valor do exame', t: 'O(a) senhor(a) sabe o valor de um exame de coração?', o: [
+    'Sim, sei quanto custa', 'Tenho uma ideia', 'Não faço ideia' ] }
+];
+
+var ans = [], cur = 0;
+function $(id) { return document.getElementById(id); }
+function show(id) { ['s-intro', 's-q', 's-r'].forEach(function (s) { $(s).hidden = (s !== id); }); window.scrollTo(0, 0); }
+
+function render() {
+  var q = QUESTIONS[cur];
+  $('part').textContent = q.k;
+  $('count').textContent = 'Pergunta ' + (cur + 1) + ' de ' + QUESTIONS.length;
+  $('fill').style.width = (cur / QUESTIONS.length * 100) + '%';
+  $('qtitle').textContent = q.t;
+  $('back').style.visibility = cur === 0 ? 'hidden' : 'visible';
+  var box = $('opts'); box.innerHTML = '';
+  q.o.forEach(function (op, i) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'opt';
+    b.setAttribute('aria-pressed', ans[cur] === i ? 'true' : 'false');
+    var dot = document.createElement('i'); dot.setAttribute('aria-hidden', 'true');
+    var tx = document.createElement('span'); tx.textContent = op;
+    b.appendChild(dot); b.appendChild(tx);
+    b.addEventListener('click', function () { choose(i); });
+    box.appendChild(b);
+  });
+}
+
+function choose(i) {
+  ans[cur] = i;
+  render();
+  setTimeout(function () {
+    if (cur < QUESTIONS.length - 1) { cur++; render(); } else { finish(); }
+  }, 220);
+}
+
+function finish() {
+  var el = $('rows'); el.innerHTML = '';
+  var lines = [];
+  QUESTIONS.forEach(function (q, n) {
+    var v = q.o[ans[n]];
+    var d = document.createElement('div'); d.className = 'row';
+    var a = document.createElement('div'); a.className = 'k'; a.textContent = q.k;
+    var b = document.createElement('div'); b.className = 'v'; b.textContent = v;
+    d.appendChild(a); d.appendChild(b); el.appendChild(d);
+    lines.push(q.k + ': ' + v);
+  });
+  var nome = $('nome').value.trim();
+  $('summary').textContent =
+    'MAVI Cardio - Questionário 2 - ' + new Date().toLocaleDateString('pt-BR') + '\n' +
+    'Nome: ' + (nome || 'não informado') + '\n' + lines.join('\n');
+  show('s-r');
+}
+
+$('start').addEventListener('click', function () { ans = []; cur = 0; show('s-q'); render(); });
+$('back').addEventListener('click', function () { if (cur > 0) { cur--; render(); } });
+$('again').addEventListener('click', function () { ans = []; cur = 0; $('nome').value = ''; $('copy').textContent = 'Copiar resumo'; show('s-intro'); });
+$('copy').addEventListener('click', function () {
+  var txt = $('summary').textContent, btn = $('copy');
+  function ok() { btn.textContent = 'Copiado'; }
+  function fallback() {
+    var rng = document.createRange(); rng.selectNodeContents($('summary'));
+    var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(rng);
+    btn.textContent = 'Selecionado: copie manualmente';
+  }
+  try { navigator.clipboard.writeText(txt).then(ok, fallback); } catch (e) { fallback(); }
+});
+</script>
+</body>
+</html>
